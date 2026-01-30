@@ -1,4 +1,2 @@
-﻿  gl3w.c
-  Lab1.cpp
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+﻿  Lab1.cpp
   Lab1.vcxproj -> E:\Documents\GitHub\COMP3011-Computer-Graphics\Lab1\x64\Debug\Lab1.exe

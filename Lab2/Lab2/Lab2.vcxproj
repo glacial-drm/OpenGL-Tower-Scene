@@ -136,8 +136,14 @@
     <ClCompile Include="Lab2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\error.h" />
     <ClInclude Include="..\..\include\file.h" />
     <ClInclude Include="..\..\include\shader.h" />
+    <ClInclude Include="..\..\include\user_input.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="triangle.frag" />
+    <None Include="triangle.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
