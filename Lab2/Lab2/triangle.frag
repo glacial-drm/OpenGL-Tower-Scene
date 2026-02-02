@@ -1,4 +1,4 @@
-# version 450 core
+#version 450 core
 	// The above specifies OpenGL version 4.5
 
 layout (location = 0) out vec4 fColour; // Output variable responsible for fragment colour

@@ -139,7 +139,6 @@
     <ClInclude Include="..\..\include\error.h" />
     <ClInclude Include="..\..\include\file.h" />
     <ClInclude Include="..\..\include\shader.h" />
-    <ClInclude Include="..\..\include\user_input.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="triangle.frag" />

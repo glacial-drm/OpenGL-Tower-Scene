@@ -1,5 +1,5 @@
 ﻿  Lab2.cpp
-E:\Documents\GitHub\COMP3011-Computer-Graphics\include\file.h(18,11): warning C4267: 'initializing': conversion from 'size_t' to 'long', possible loss of data
+E:\Documents\GitHub\Uni\COMP3011-Computer-Graphics\include\file.h(18,11): warning C4267: 'initializing': conversion from 'size_t' to 'long', possible loss of data
   (compiling source file 'Lab2.cpp')
   
-  Lab2.vcxproj -> E:\Documents\GitHub\COMP3011-Computer-Graphics\Lab2\x64\Debug\Lab2.exe
+  Lab2.vcxproj -> E:\Documents\GitHub\Uni\COMP3011-Computer-Graphics\Lab2\x64\Debug\Lab2.exe

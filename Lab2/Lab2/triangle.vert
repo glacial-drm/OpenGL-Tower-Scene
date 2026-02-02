@@ -1,4 +1,4 @@
-# version 450 core
+#version 450 core
 	// The above specifies OpenGL version 4.5
 
 layout (location = 0) in vec4 vPos; // input variable of type vec4, vPos, representing vertex position
