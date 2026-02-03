@@ -99,7 +99,7 @@ int main()
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (5 * sizeof(float)), (void*)0);
 		// The above
 			// Specifies the index attribute has size number of components of the specified type, where each vertex is made from "stride" bytes.
-			// offset is the indexo the first element of this attribute after the start of a a particular vertex
+			// offset is the index of the first element of this attribute after the start of a a particular vertex
 		// In the above we specify:
 			// The first attribute, index=0, is composed of 2 GL_FLOATs where each vertex is composed of 2 floats
 			// The first element has an offset of 0, (void*)0.
