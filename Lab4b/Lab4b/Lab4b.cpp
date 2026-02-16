@@ -134,10 +134,12 @@ int main(int argc, char** argv)
 		glUseProgram(shaderProgram);
 
 		glm::mat4 view = glm::mat4(1.f);
-		view = glm::translate(view, -glm::vec3(5.0f, 5.0f, 5.0f));
+		view = glm::translate(view, -glm::vec3(0.0f, 2.f, 5.0f));
+		// view = glm::translate(view, -glm::vec3(5.0f, 5.0f, 5.0f));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
 		glm::mat4 projection = glm::mat4(1.f);
+		// projection = glm::perspective(glm::radians(45.f), 640.f / 460.f, 1.f, 10.f);
 		projection = glm::perspective(glm::radians(45.f), 640.f / 460.f, 1.f, 10.f);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -147,7 +149,8 @@ int main(int argc, char** argv)
 		glUniform3f(glGetUniformLocation(shaderProgram, "uCol"), 1.f, 0.f, 0.f);
 		
 		glm::mat4 model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(7.0f, 0.f, 5.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 0.f, -2.0f));
+		// model = glm::translate(model, glm::vec3(7.0f, 0.f, 5.0f));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -156,7 +159,7 @@ int main(int argc, char** argv)
 		glUniform3f(glGetUniformLocation(shaderProgram, "uCol"), 0.f, 1.f, 0.f);
 
 		model = glm::mat4(1.f);
-		model = glm::translate(model, glm::vec3(5.0f, 0.f, 7.0f));
+		// model = glm::translate(model, glm::vec3(5.0f, 0.f, 7.0f));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
