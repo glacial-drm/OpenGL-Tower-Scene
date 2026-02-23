@@ -79,16 +79,45 @@ void processKeyboard(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	// Offset camera by +1 in the x axis when the right arrow key is preseed
+	
 	float x_offset = 0.f;
 	float y_offset = 0.f;
 	bool cam_changed = false;
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	// Rotate/Orient the camera in the specified direction (arrow keys)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		x_offset = 0.f;
+		y_offset = 1.f;
+		cam_changed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		x_offset = 0.f;
+		y_offset = -1.f;
+		cam_changed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		x_offset = -1.f;
+		y_offset = 0.f;
+		cam_changed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) // Offset camera by +1 in the x axis when the right arrow key is preseed
 	{
 		x_offset = 1.f;
 		y_offset = 0.f;
 		cam_changed = true;
 	}
+	
+	// Zoom in and out
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+	{
+		cam_dist -= .1f; // Declared in camera.h
+		cam_changed = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+	{
+		cam_dist += .1f;
+		cam_changed = true;
+	}
+
 
 	// Perform relevant changes
 	if (cam_changed)
@@ -146,7 +175,14 @@ int main(int argc, char** argv)
 		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		glm::mat4 view = glm::mat4(1.f);
-		view = glm::translate(view, -glm::vec3(0.f, 0.f, 3.f));
+		// view = glm::translate(view, -glm::vec3(0.f, 0.f, 3.f)); // old view matrixformat
+		view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
+			// LookAt constructs view matrix from:
+				// position - pos of camera in world space
+				// "target" - pos of target of the camera
+				// "up" - normalised vector defining the camera up direction, helping with orientation
+			// This new view matrix format translates all vertices such that the camera is the origin and rotates them relative to "target" and "up"
+
 		glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
 		glm::mat4 projection = glm::mat4(1.f);

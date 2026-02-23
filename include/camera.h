@@ -23,7 +23,7 @@ struct SCamera
 	float Yaw;
 	float Pitch;
 
-	const float MovementSpeed = 5.5f;
+	const float MovementSpeed = .5f;
 	float MouseSensitivity = 1.f;
 
 
@@ -56,9 +56,30 @@ void MoveAndOrientCamera(SCamera& in, glm::vec3 target,
 
 	// The camera moves relative to the focused object
 		// Hence changes to Yaw and Pitch are inverted
-	in.Yaw -= xoffset;
-	in.Pitch -= yoffset;
+	in.Yaw -= xoffset * in.MovementSpeed;
+	in.Pitch -= yoffset * in.MovementSpeed;
 
-	in.Position = glm::vec3(glm::radians(), , );
+	// Up and Down directions have strange orientataion at poles of the unit sphere defining camera path
+		// Fix is to limit the camera pitch to between -89 and 89
+	if (in.Pitch > 89.0f)	in.Pitch = 89.0f;
+	if (in.Pitch < -89.0f)	in.Pitch = -89.0f;
+
+	// Update Camera Position using newly calced Yaw and Pitch
+		// Rotate around each of the axes
+	float px = cos(glm::radians(in.Yaw)) * cos(glm::radians(in.Pitch));
+	float py = sin(glm::radians(in.Pitch));
+	float pz = sin(glm::radians(in.Yaw)) * cos(glm::radians(in.Pitch));
+	in.Position = glm::vec3(px, py, pz) * distance;
+
+	// Update Front Direction using newly calced position
+		// Subtract new position from target's position
+		// Normalise result to get direction from camera to the target
+	in.Front = glm::normalize(target - in.Position);
+
+	// Update Right Direction
+		// Point at a tangent to the "imaginary sphere" along its equator
+			//  Calced using cross product of the Front and WorldUp vectors (90deg to both of them)
+			// Normalise result to get direction from camera to pole of the sphere
+	in.Right = glm::normalize(glm::cross(in.Front, in.WorldUp));
 
 }
