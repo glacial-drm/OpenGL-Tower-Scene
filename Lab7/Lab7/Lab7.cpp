@@ -16,6 +16,8 @@
 
 
 //light direction variable here
+glm::vec3 lightDirection = glm::vec3(0.1f, -.81f, -.61f);
+
 
 SCamera Camera;
 
@@ -24,52 +26,52 @@ float vertices[] =
 {
 	//back face
 	//pos					//col				//normal
-	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
+	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
+	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
+	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
+	-0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
+	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, 0.f, -1.f,
 
 	//front face
-	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
+	0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
+	0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
+	0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
+	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
+	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	0.f, 0.f, 1.f,
 
 	//left face
-	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
+	-0.5f,  0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
+	-0.5f, -0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
+	-0.5f, -0.5f, -0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
+	-0.5f, -0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
+	-0.5f,  0.5f,  0.5f,  	1.0f, 1.0f, 1.0f,	-1.f, 0.f, 0.f,
 
 	//right face
-	0.5f,  0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f, 	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
+	0.5f,  0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
+	0.5f,  0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
+	0.5f, -0.5f, -0.5f, 	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
+	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
+	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
+	0.5f,  0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	1.f, 0.f, 0.f,
 
 	//bottom face
-	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
+	0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
+	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
+	0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
+	-0.5f, -0.5f,  0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
+	-0.5f, -0.5f, -0.5f,  	1.f, 1.0f, 1.0f,	0.f, -1.f, 0.f,
 
 	//top face
-	-0.5f,  0.5f, -0.5f,  	1.0f, 1.f, 1.0f,
-	0.5f,  0.5f, -0.5f,  	1.0f, 1.f, 1.0f,
-	0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,
-	0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,
-	-0.5f,  0.5f, -0.5f, 	1.0f, 1.f, 1.0f
+	-0.5f,  0.5f, -0.5f,  	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f,
+	0.5f,  0.5f, -0.5f,  	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f,
+	0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f,
+	0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f,
+	-0.5f,  0.5f,  0.5f,  	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f,
+	-0.5f,  0.5f, -0.5f, 	1.0f, 1.f, 1.0f,	0.f, 1.f, 0.f
 };
 
 
@@ -118,6 +120,11 @@ void processKeyboard(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	// Set light direction to point in the smae direction
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		lightDirection = Camera.Front;
+	}
 
 	float x_offset = 0.f;
 	float y_offset = 0.f;
@@ -196,10 +203,12 @@ int main(int argc, char** argv)
 	glGenVertexArrays(NUM_VAOS, VAOs);
 	glBindVertexArray(VAOs[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (6 * sizeof(float)), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (6 * sizeof(float)), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -212,6 +221,11 @@ int main(int argc, char** argv)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glUseProgram(program);
+
+		// Copy light direction, light colour, camera position
+		glUniform3f(glGetUniformLocation(program, "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+		glUniform3f(glGetUniformLocation(program, "lightColour"), 0.f, 0.f, 1.f);
+		glUniform3f(glGetUniformLocation(program, "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
 
 		glm::mat4 view = glm::mat4(1.f);
 		view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
