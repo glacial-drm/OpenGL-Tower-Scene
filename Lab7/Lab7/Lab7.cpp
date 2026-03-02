@@ -15,9 +15,9 @@
 
 
 
-//light direction variable here
+//light direction & position variables here
 glm::vec3 lightDirection = glm::vec3(0.1f, -.81f, -.61f);
-
+glm::vec3 lightPos = glm::vec3(2.f, 6.f, 7.f);
 
 SCamera Camera;
 
@@ -120,10 +120,11 @@ void processKeyboard(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	// Set light direction to point in the smae direction
+	// Set light direction & position to point from the current camera front / pos
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
 		lightDirection = Camera.Front;
+		lightPos = Camera.Position;
 	}
 
 	float x_offset = 0.f;
@@ -222,10 +223,11 @@ int main(int argc, char** argv)
 
 		glUseProgram(program);
 
-		// Copy light direction, light colour, camera position
+		// Copy light direction, light colour, camera position, light position
 		glUniform3f(glGetUniformLocation(program, "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
 		glUniform3f(glGetUniformLocation(program, "lightColour"), 0.f, 0.f, 1.f);
 		glUniform3f(glGetUniformLocation(program, "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+		glUniform3f(glGetUniformLocation(program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 		glm::mat4 view = glm::mat4(1.f);
 		view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
