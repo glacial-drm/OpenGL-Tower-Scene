@@ -38,6 +38,14 @@ glm::vec3 Shade(triangle* tri, int depth, glm::vec3 p, glm::vec3 dir)
     // colour += trace ( refraction ray) -------------------------------- NO NEED TO IMPLEMENT (refraction ray)
 
     col = ambient; 
+
+    
+
+    if (depth) // secondary rays can be recursively generated up to a maximum depth
+        trace(o, dir, t, col, depth - 1, Shade); // colour += trace(reflection ray)
+    
+    
+    // at which point the accumulated ray colour is used for the pixel
     return col;
 }
 
@@ -137,10 +145,9 @@ void raytrace()
             float t, depth; // does depth correspond to max_recursion_depth in donotedit
             
             // trace ray to get colour & shade closest triangle
-            // trace(o, d, t, col, depth, Shade);
-            trace(o, d, t, col, depth, DoNothing);
+            trace(o, d, t, col, depth, Shade);
+            // trace(o, d, t, col, depth, DoNothing);
 
-            
             writeCol(col, pixel_x, pixel_y);
         }
     }
