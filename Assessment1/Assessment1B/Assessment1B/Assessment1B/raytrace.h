@@ -16,39 +16,29 @@ glm::vec3 Shade(triangle* tri, int depth, glm::vec3 p, glm::vec3 dir)
     float i_amb = 0.1f;
     glm::vec3 ambient = i_amb * surface_col; // "use colour of any vertex for surface colour"
 
+    col = ambient;
+
     float i_dff = dot(n, dir); // dot product between normal and light source
     glm::vec3 diffuse = i_dff * surface_col;
     
     // for each L in lights 
         // trace (ray to L)
-        // there's only one light source, being the eye vector? -----------------
-        // how do we trace here
-    // trace();
-        
-        
-     if( dot(tri->v1.nor, tri->v1.pos - p) ) // if no intersection (between ray and plane?) (if angle between these is not 0)
-        ambient += diffuse; // colour += diffuse light contribution
-
+        // there's only one light source, being the eye vector? --------
     
+    // trace (ray to L);
+    float t;
+    trace(eye, dir, t, col, depth - 1, Shade);
         
+    if( dot(tri->v1.nor, tri->v1.pos - p) ) // if no intersection (between ray and plane?) (if angle between these is not 0)
+        col += diffuse; // colour += diffuse light contribution
     
-    // WE CAN'T TRACE HERE AS IT WOULD BE A RECURSIVE FUNCTION (takes function param)
-        // put the following after this func
-    tri->reflect; // colour += trace ( reflection ray) 
-    // colour += trace ( refraction ray) -------------------------------- NO NEED TO IMPLEMENT (refraction ray)
-
-    col = ambient; 
-
-    
-
+    // trace reflections (below), refractions (not assessed) and shadows (?)
     if (depth) // secondary rays can be recursively generated up to a maximum depth
-        trace(o, dir, t, col, depth - 1, Shade); // colour += trace(reflection ray)
-    
-    
-    // at which point the accumulated ray colour is used for the pixel
-    return col;
-}
+        // WHERE DO WE GET THE dir FOR THE NEW RAY? ------------------
+        trace(eye, dir, t, col, depth - 1, Shade); // colour += trace(reflection ray)
 
+    return col; // at which point the accumulated ray colour is used for the pixel
+}
 
 bool PointInTriangle(glm::vec3 pt, glm::vec3 v1, glm::vec3 v2, glm::vec3 v3)
 {
@@ -83,27 +73,30 @@ void trace(glm::vec3 o, glm::vec3 dir, float& t, glm::vec3& io_col, int depth, c
     
     // for each tri in triangles, no list of tris, get tri from p_hit(?). closest_hit is a function pointer -----------------------
     float t_min = FLT_MAX, t_temp;
+    
     for (triangle tri : tris) {
         
         // i. Compute if the ray intersects with a plane on which the triangle lies
-        t_temp = RayTriangleIntersection(o, dir, &tri, tri.v1.pos); // t = RayTriangleInterstction(tri)
+        t_temp = RayTriangleIntersection(o, dir, &tri, tri.v1.pos); // t = RayTriangleIntersection(tri)
         
         // ii. Test if the point of intersection is inside the triangle. this might have to go elsewhere, e.g. in raytrace(), if PointInTriangle, then pass shade else doNothing ----------------------
                 // makes sense to test if inside closest_triangle
         glm::vec3 q = o + dir * t_temp;
-        bool inTriangle = PointInTriangle(q, closest_triangle.v1.pos, closest_triangle.v2.pos, closest_triangle.v3.pos);
+        bool inTriangle = PointInTriangle(q, tri.v1.pos, tri.v2.pos, tri.v3.pos);
 
         if ((t_temp < t_min) && inTriangle) {
             // save closest_triangle
                             // minimum value of t found?
             t = t_temp;
+            t_min = t_temp;
+
             closest_triangle = tri;
         }
             
     }
     
     // return Shade(closest_triangle)
-        // no return, just shade triangle or do nothing here(?)
+        // no return, just shade triangle or do nothing here
     p_hit(&closest_triangle, depth, closest_triangle.v1.pos, dir);
 }
 
@@ -141,11 +134,11 @@ void raytrace()
             glm::vec3 o = eye; // o = camera
 
             // colour of pixel = trace (ray)
-            glm::vec3 col; // =bkgd // by default
-            float t, depth; // does depth correspond to max_recursion_depth in donotedit
+            glm::vec3 col = bkgd; // by default
+            float t, depth = max_recursion_depth; // does depth correspond to max_recursion_depth in donotedit
             
             // trace ray to get colour & shade closest triangle
-            trace(o, d, t, col, depth, Shade);
+            // trace(o, d, t, col, depth, Shade);
             // trace(o, d, t, col, depth, DoNothing);
 
             writeCol(col, pixel_x, pixel_y);
