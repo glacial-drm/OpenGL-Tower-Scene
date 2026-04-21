@@ -18,5 +18,22 @@
     <ClCompile Include="Assessment2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\GL\gl3w.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="phong.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phong.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="triangle.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="triangle.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
