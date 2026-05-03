@@ -52,16 +52,21 @@ int main(int argc, char** argv)
 	GLuint program = CompileShader("mvp.vert", "col.frag");
 
 	std::vector<point> ctrl_points;
-	ctrl_points.push_back(point(-5.f, -1.f, 0.f));
-	ctrl_points.push_back(point(5.f, -1.f, 0.f));
+	ctrl_points.push_back(point(-5.f, -4.f, 0.f));
+	ctrl_points.push_back(point(-5.f, 4.f, 0.f));
+	ctrl_points.push_back(point(5.f, -4.f, 0.f));
+	ctrl_points.push_back(point(5.f, 4.f, 0.f));
 
+	int num_evals = 30;
+	std::vector<point> curve = EvaluateBezierCurve(ctrl_points, num_evals);
+	
 	int num_curve_verts = 0;
 	int num_curve_floats = 0;
-	float* curve_vertices = NULL;
+	float* curve_vertices = MakeFloatsFromVector(curve, num_curve_verts, num_curve_floats, 0.f, 0.f, 0.f);
 
 	int num_ctrl_verts = 0;
 	int num_ctrl_floats = 0;
-	float* ctrl_vertices = NULL;
+	float* ctrl_vertices = MakeFloatsFromVector(ctrl_points, num_ctrl_verts, num_ctrl_floats, 1.f, 0.f, 0.f);
 
 
 	glCreateBuffers(NUM_BUFFERS, Buffers);
@@ -107,6 +112,11 @@ int main(int argc, char** argv)
 		glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)800 / (float)600, .01f, 100.f);
 		glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
+		glBindVertexArray(VAOs[0]);
+		glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
+
+		glBindVertexArray(VAOs[1]);
+		glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
 
 		glfwSwapBuffers(window);
 

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/noise.hpp>
 
 #include <iostream>
 
@@ -11,6 +12,7 @@
 #include "error.h"
 #include "file.h"
 #include "shader.h"
+#include "chunk.h"
 
 #include "do_not_edit.h"
 
@@ -20,7 +22,9 @@ glm::vec3 lightDirection = glm::vec3(0.1f, -.81f, -.61f);
 glm::vec3 lightPos = glm::vec3(2.f, 6.f, 7.f);
 
 SCamera Camera;
-
+bool firstMouse = true; // set to true initially as running program is first time mouse gets input
+float lastX = 0.f, lastY = 0.f; // previous position of mouse on screen
+float fov = 55.f;
 
 float vertices[] =
 {
@@ -113,9 +117,8 @@ void drawFloorAndCubes(unsigned int shaderProgram)
 
 }
 
-
-
-void processKeyboard(GLFWwindow* window)
+// CONTAINS SPOTLIGHT CODE -----------------------------
+void processKeyboardRotate(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -134,22 +137,26 @@ void processKeyboard(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 		x_offset = 0.f;
 		y_offset = 1.f;
+
 		cam_changed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 		x_offset = 0.f;
 		y_offset = -1.f;
+
 		cam_changed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 		x_offset = -1.f;
 		y_offset = 0.f;
+
 		cam_changed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) // Offset camera by +1 in the x axis when the right arrow key is preseed
 	{
 		x_offset = 1.f;
 		y_offset = 0.f;
+
 		cam_changed = true;
 	}
 
@@ -157,11 +164,13 @@ void processKeyboard(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
 		cam_dist -= .1f; // Declared in camera.h
+
 		cam_changed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 	{
 		cam_dist += .1f;
+
 		cam_changed = true;
 	}
 
@@ -169,8 +178,87 @@ void processKeyboard(GLFWwindow* window)
 	// Perform relevant changes
 	if (cam_changed)
 	{
-		MoveAndOrientCamera(Camera, glm::vec3(0.f, 0.f, 0.f), cam_dist, x_offset, y_offset);
+		cameraRotateAroundObject(Camera, glm::vec3(0.f, 0.f, 0.f), cam_dist, x_offset, y_offset);
 	}
+}
+
+
+void processKeyboardWalkAround(GLFWwindow* window) // REF: https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.4.camera_class/camera_class.cpp
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	float deltaTime = 0.0f;
+	float lastFrame = 0.0f;
+
+	float currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
+
+	float cam_speed = 0.1f * deltaTime;
+
+	// Rotate/Orient the camera in the specified direction (arrow keys)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		Camera.Position += cam_speed * Camera.Front;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		Camera.Position -= cam_speed * Camera.Front;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+	{
+		Camera.Position -= glm::normalize(glm::cross(Camera.Front, Camera.Up)) * cam_speed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+	{
+		Camera.Position += glm::normalize(glm::cross(Camera.Front, Camera.Up)) * cam_speed;
+	}
+	
+	// Camera.Position.y = 0.f; // force 0 for now 
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) // REF: https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.4.camera_class/camera_class.cpp
+{
+	
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	Camera.Yaw += xoffset;
+	Camera.Pitch += yoffset;
+
+	if (Camera.Pitch > 89.0f)
+		Camera.Pitch = 89.0f;
+	if (Camera.Pitch < -89.0f)
+		Camera.Pitch = -89.0f;
+
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(Camera.Yaw)) * cos(glm::radians(Camera.Pitch));
+	direction.y = sin(glm::radians(Camera.Pitch));
+	direction.z = sin(glm::radians(Camera.Yaw)) * cos(glm::radians(Camera.Pitch));
+	Camera.Front = glm::normalize(direction);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) // REF: https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.4.camera_class/camera_class.cpp
+{
+	fov -= (float)yoffset;
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 45.0f)
+		fov = 45.0f;
 }
 
 void SizeCallback(GLFWwindow* window, int w, int h)
@@ -191,34 +279,115 @@ vector<float> parse_vertex(vertex v) {
 
 int main(int argc, char** argv)
 {
+	glm::vec3 origin = glm::vec3(0.f, 0.f, 0.f); // glm::vec3(-32.f, 0.f, -32.f);
+	int originOffset = (dim - 1) * stride; // -1 as dim is array size 32 compared to 0-31 range
+	
+	int chunksX = 8, chunksZ = 8; // x by 2x breaks, test or do I acc care atp
+	int chunkVertTotal = dim * dim * 6; // *6 = *3 (triangle) * 2 (2 triangles per square)
+	int vertexTotal = chunkVertTotal * chunksX * chunksZ; // procedural | testVertices // 
+	
+	int chunkFloatSize = chunkVertTotal * 9; // *9 as 9 components per vert (3 pos, 3 col, 3 nor)
+	int floatTotal = chunkFloatSize * chunksX * chunksZ;
+
+	// procedurally generate
+		// based on heights ----------------------------------------------------------
+			// mountain > grass > water
+				// if doing icurrus city then puddles vs deep water
+		// trees spawn semi
+
+	
+	std::vector<float> testVertsVect;
+	float* proceduralVerts = new float[floatTotal];
+	
+	float* loopVerts = new float[chunkFloatSize]; // single chunk iteration
+	
+	int gridOffset; 
+	chunk** loopChunks = (chunk**) malloc((chunksX * chunksZ) * sizeof(chunk*)); // grid of chunks
+	chunk* loopChunk;
+	
+	std::vector<float> loopVect;
+	for (int row = 0; row < chunksX; row++) {
+		
+		for (int col = 0; col < chunksZ; col++) { // skip on some iterations probably (allow space for non procedural chunks
+			
+			gridOffset = (row * chunksX) + col;
+
+			loopChunk = perlinChunk(origin);
+			loopChunks[gridOffset] = loopChunk;
+			
+			// adjust the chunk to connect verts
+			if (col != 0) { // connect the west verts
+				connectTris(loopChunk, loopChunks[gridOffset - 1], 0);
+			}
+			if (row != 0) { // connect the south verts
+				connectTris(loopChunk, loopChunks[gridOffset - chunksX], 1);
+			}
+			
+			// get the verts from chunk and append to vector
+			loopVerts = chunkVertices(loopChunk);
+			loopVect.assign(loopVerts, loopVerts + chunkFloatSize);
+
+			testVertsVect.insert(testVertsVect.end(), loopVect.begin(), loopVect.end());
 
 
-	const std::string MODEL_PATH = "objs/cornell2/cornell-box.obj";
-	// const std::string MODEL_PATH = "objs/CornellBox/CornellBox-Original.obj";
-	std::vector<triangle> tris;
-	obj_parse(MODEL_PATH.c_str(), &tris);
-	int vertexTotal = 96; // includes double counted vertices
+			origin.z += originOffset;
+		}
+		origin.x += originOffset;
 
-	std::vector<float> verts_vect; // create vector then convert to arr
-
-	for (triangle t : tris) { // index over triangles 
-
-		std::vector<float> vert = parse_vertex(t.v1); // parse info we need (pos, col, nor)
-		verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
-
-		vert = parse_vertex(t.v2);
-		verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
-
-		vert = parse_vertex(t.v3);
-		verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
-
+		origin.z -= originOffset * chunksZ;
 	}
+	
+	std::copy(testVertsVect.begin(), testVertsVect.end(), proceduralVerts); // this seems to be the issue
 
-	// get tris and convert to format in vertices[]
-	// float* verts = new float[verts_vect.size()];
-	float verts[864]; // number of vertices * 9
-	std::copy(verts_vect.begin(), verts_vect.end(), verts); // this seems to be working :>
-	cout << verts[863];
+	// load models -----------------------------------
+		// miku?
+		// tower exterior, interior would be a bit crazy
+			// if doing interior, make sure to make some parts procedural
+
+
+	
+
+	// Single chunk
+	
+	//int vertexTotal = dim * dim * 6; // single chunk procedural
+	
+	//chunk* testChunk = perlinChunk(glm::vec3(0.f, 0.f, 0.f));
+	//float* testVerts = new float[vertexTotal * 9];
+	//testVerts = chunkVertices(testChunk);
+
+
+	// Cornell obj
+	
+	// int vertexTotal = 96; // cornell box | verts
+	
+	//const std::string MODEL_PATH = "objs/cornell2/cornell-box.obj";
+	//std::vector<triangle> tris;
+	//obj_parse(MODEL_PATH.c_str(), &tris);
+
+	//std::vector<float> verts_vect; // create vector then convert to arr
+
+	//for (triangle t : tris) { // index over triangles 
+
+	//	std::vector<float> vert = parse_vertex(t.v1); // parse info we need (pos, col, nor)
+	//	verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
+
+	//	vert = parse_vertex(t.v2);
+	//	verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
+
+	//	vert = parse_vertex(t.v3);
+	//	verts_vect.insert(verts_vect.end(), vert.begin(), vert.end());
+
+	//}
+
+	//// get tris and convert to format in vertices[]
+	//float* verts = new float[verts_vect.size()];
+	//// float verts[864]; // number of vertices * 9
+	//std::copy(verts_vect.begin(), verts_vect.end(), verts); // this seems to be working :>
+
+	
+	// Lab obj (cubes and plane)
+
+	// int vertexTotal = 36; // lab | vertices
 
 	glfwInit();
 
@@ -226,20 +395,22 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(window);
 	glfwSetWindowSizeCallback(window, SizeCallback);
 
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+	
 	gl3wInit();
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(DebugCallback, 0);
 
-	GLuint program = CompileShader("phong.vert", "phong.frag");
+	GLuint program = CompileShader("triangle.vert", "triangle.frag");
 
 	InitCamera(Camera);
-	cam_dist = 5.0f;
-	MoveAndOrientCamera(Camera, glm::vec3(0, 0, 0), cam_dist, 0.f, 0.f);
-
+	cameraWalkAroundSpace(Camera, cam_dist, 0.f, 0.f); // orient camera once on init
+	
 
 	glCreateBuffers(NUM_BUFFERS, Buffers);
-	glNamedBufferStorage(Buffers[0], sizeof(verts), verts, 0);
+	glNamedBufferStorage(Buffers[0], sizeof(float) * floatTotal, proceduralVerts, 0);
 
 	glGenVertexArrays(NUM_VAOS, VAOs);
 	glBindVertexArray(VAOs[0]);
@@ -279,25 +450,28 @@ int main(int argc, char** argv)
 		view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
 		glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-		/*glm::mat4 projection = glm::mat4(1.f);
-		projection = glm::perspective(glm::radians(45.f), (float)WIDTH / (float)HEIGHT, .01f, 100.f);
-		glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));*/
+		// Cubes and floor (lab)
+
+		//glm::mat4 projection = glm::mat4(1.f);
+		//projection = glm::perspective(glm::radians(45.f), (float)WIDTH / (float)HEIGHT, .01f, 100.f);
+		//glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 		//drawFloorAndCubes(program);
 
+
+		// Cornell (self study)
+
 		glm::mat4 projection = glm::mat4(1.f);
-		// projection = glm::perspective(glm::radians(55.f), (float)WIDTH / (float)HEIGHT, .1f, 10.f);
-		projection = glm::perspective(glm::radians(55.f), (float)WIDTH / (float)HEIGHT, .1f, 100.f);
+		projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, .1f, 100.f);
 		glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 		glm::mat4 model = glm::mat4(1.f);
 		model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
 		model = glm::translate(model, glm::vec3(.1f, -2.5f, 0.f));
 
-		// model = glm::scale(model, glm::vec3(100, 0.1, 100));
 		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-
+		 
+		// Bind arrays
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, vertexTotal);
 		glBindVertexArray(0);
@@ -305,7 +479,8 @@ int main(int argc, char** argv)
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
-		processKeyboard(window);
+		// processKeyboardRotate(window);
+		processKeyboardWalkAround(window);
 	}
 
 	glfwDestroyWindow(window);

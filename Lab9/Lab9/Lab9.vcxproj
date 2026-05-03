@@ -139,6 +139,10 @@
     <ClInclude Include="..\..\include\casteljau.h" />
     <ClInclude Include="..\..\include\point.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="col.frag" />
+    <None Include="mvp.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

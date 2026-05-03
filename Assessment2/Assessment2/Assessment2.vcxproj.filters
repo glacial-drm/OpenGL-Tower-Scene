@@ -35,5 +35,16 @@
     <None Include="triangle.vert">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="texture.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="texture.vert">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\chunk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

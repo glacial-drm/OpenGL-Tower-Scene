@@ -138,8 +138,13 @@
   <ItemGroup>
     <None Include="phong.frag" />
     <None Include="phong.vert" />
+    <None Include="texture.frag" />
+    <None Include="texture.vert" />
     <None Include="triangle.frag" />
     <None Include="triangle.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\chunk.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
