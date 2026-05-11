@@ -181,7 +181,23 @@ int main(int argc, char** argv)
 
 		// Texture object is bound to OpenGL, enabling its use
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glUseProgram(program);
+		
+		glBindVertexArray(VAOs[0]);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+
+		model = glm::mat4(1.f);
+		model = glm::rotate(model, glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f));
+		model = glm::translate(model, glm::vec3(0, -3, 0));
+		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+		// Texture object is bound to OpenGL, enabling its use
+		glBindTexture(GL_TEXTURE_2D, texture);
+
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);

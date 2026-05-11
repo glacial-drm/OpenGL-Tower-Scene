@@ -3,11 +3,12 @@
 
 #include <glm/gtc/noise.hpp>
 
-int dim = 32;
-int stride = 1; // verify stride in main file ---------------
+int dim = 8;
+int stride = 100;
+int floatPerVert;
 
 typedef struct {
-	int dim; // grid size in both x and z, (0 to 32)
+	int dim; // grid size for a single chunk in both x and z, (0 to dim)
 	int stride; // distance of a unit vector within the grid (1 -> n)
 
 	glm::vec3 origin; // position to start rendering
@@ -17,7 +18,8 @@ typedef struct {
 	float** heights;
 } chunk;
 
-chunk* perlinChunk(glm::vec3 origin) {
+
+chunk* createChunk(glm::vec3 origin, int height, bool isPerlin) {
 
 	chunk* newChunk = new chunk;
 
@@ -32,12 +34,16 @@ chunk* perlinChunk(glm::vec3 origin) {
 		newChunk->heights[row] = new float[newChunk->dim];
 
 		for (int col = 0; col < newChunk->dim; col++) {
-			float randFloat = static_cast <float>(rand()) / static_cast <float>(RAND_MAX); // random between 0 and 1
-
-			randFloat *= 10;
-
-			newChunk->heights[row][col] = randFloat; //glm::perlin(glm::vec2((float)row, (float)col));; // or use our implementation of perlin and talk about in R&D --------------------------------------
 			
+			newChunk->heights[row][col] = height; // randFloat; //glm::perlin(glm::vec2((float)row, (float)col));; // or use our implementation of perlin and talk about in R&D --------------------------------------
+
+			if (isPerlin) {
+				float randFloat = static_cast <float>(rand()) / static_cast <float>(RAND_MAX); // random between 0 and 1
+				randFloat *= height;
+				
+				newChunk->heights[row][col] = randFloat;
+			}
+
 		}
 	}
 
@@ -48,9 +54,26 @@ chunk* perlinChunk(glm::vec3 origin) {
 //	return;
 //}
 
-//float* textureChunk(float height) {
-//
-//}
+float textureChunk(float height) {
+	float texture = 0.3f;
+
+	// not only do we need to know the texture atlas coords
+		// for each height to select a given texture
+	// but we also need to know what part of the texture (vertices) we're on
+		// THIS IS AS TEXTURES TAKE COORDS FROM THE ATLAS
+			
+	
+	// essentially this encourages increasing the stride of our chunks and reducing the dim
+
+	if (height < 2) {
+		texture = 0.f;
+	}
+	else if (height > 5) {
+		texture = 0.6f;
+	}
+
+	return texture;
+}
 
 float* colourChunk(float height) {
 	float col[3] = {0.f, 1.f, 0.f};
@@ -69,7 +92,9 @@ float* colourChunk(float height) {
 	return col;
 }
 
-void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk) {
+void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk, float texX, float texY) {
+	// THIS WOULD HAVE TO PASS THE VERTEX POSITION TO THE TEXTURE CHUNK FUNCTION --------------------------------
+	
 	// pos
 	float height = chunk->origin.y + chunk->heights[row][col];
 	
@@ -83,13 +108,25 @@ void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk) {
 	verts[offset + 3] = colour[0];
 	verts[offset + 4] = colour[1];
 	verts[offset + 5] = colour[2];
+		
+	if (floatPerVert == 8) { // texture
+		// texture has to repeat each square
+		// then simply render the triangles from (0,0 to 1,1)
+			// texture atlas would be aligning all 3 tex images, then applying a 0.3 or 0.6 modifier to x ----------------------------
+		
+		verts[offset + 6] = texX * textureChunk(height);
+		verts[offset + 7] = texY;
+	}
+	else if (floatPerVert == 7) { // alpha
+		verts[offset + 6] = 0.5f;
+	}
+	else { // 9 | normals
+		verts[offset + 6] = 0.f;
+		verts[offset + 7] = 1.f;
+		verts[offset + 8] = 0.f;
+	}
 
-	// nor
-	verts[offset + 6] = 0.f;
-	verts[offset + 7] = 1.f;
-	verts[offset + 8] = 0.f;
-
-	offset += 9;
+	offset += floatPerVert; // also change the offset from 9 to 8 -----------------------------------
 }
 
 void writeTriangles(float* verts, int row, int col, int& offset, chunk* chunk) { // need to convert them to tris, that's why the vertices[] in lab squares have 6 per face
@@ -109,9 +146,9 @@ void writeTriangles(float* verts, int row, int col, int& offset, chunk* chunk) {
 		//  \ |
 		//   \|
 
-		writeVertex(verts, row, col, offset, chunk);
-		writeVertex(verts, row - 1, col, offset, chunk);
-		writeVertex(verts, row, col - 1, offset, chunk);
+		writeVertex(verts, row, col, offset, chunk, 1, 1); // 1, 1
+		writeVertex(verts, row - 1, col, offset, chunk, 0, 1); // 0, 1
+		writeVertex(verts, row, col - 1, offset, chunk, 1, 0); // 1, 0
 	}
 	if (row != chunk->dim - 1 && col != chunk->dim - 1) { // if verts aren't north and east borders of the grid
 		// draw triangle from
@@ -119,21 +156,28 @@ void writeTriangles(float* verts, int row, int col, int& offset, chunk* chunk) {
 		// | \
 		// |__\
 
-		writeVertex(verts, row, col, offset, chunk);
-		writeVertex(verts, row + 1, col, offset, chunk);
-		writeVertex(verts, row, col + 1, offset, chunk);	
+		writeVertex(verts, row, col, offset, chunk, 0, 0); // 0, 0
+		writeVertex(verts, row + 1, col, offset, chunk, 1, 0); // 1, 0
+		writeVertex(verts, row, col + 1, offset, chunk, 0, 1); // 0, 1
 	}
 }
 
-float* chunkVertices(chunk* chunk) {
+float* chunkVertices(chunk* chunk, int vertFloatTotal) {
 	// return list of chunk vertices to be rendered
 	
+
+
+	floatPerVert = vertFloatTotal;
+	// *9 for pos, col, nor.
+	// *10 adds alpha
+	// *8 is for texture, without alpha and nor
+	
 	// (chunk->dim)^2 is number of intersection points. 
-	// *9 for pos, col, nor. 
+	// * floatPerVert based on above
 	// *6 is:
 		// *3 (triangle = 3 verts)
 		// *2 (two triangles per vert)
-	float* verts = new float[chunk->dim * chunk->dim * 9 * 6];
+	float* verts = new float[chunk->dim * chunk->dim * floatPerVert * 6];
 
 	int offset = 0;
 	for (int row = 0; row < chunk->dim; row++) { // corresponds to x

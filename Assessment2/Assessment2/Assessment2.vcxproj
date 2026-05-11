@@ -136,15 +136,28 @@
     <ClCompile Include="Assessment2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="alpha.frag" />
+    <None Include="alpha.vert" />
+    <None Include="reflection.frag" />
+    <None Include="reflection.vert" />
+    <None Include="refraction.frag" />
+    <None Include="skybox.frag" />
+    <None Include="skybox.vert" />
     <None Include="phong.frag" />
     <None Include="phong.vert" />
+    <None Include="shadow.frag" />
+    <None Include="shadow.vert" />
     <None Include="texture.frag" />
     <None Include="texture.vert" />
     <None Include="triangle.frag" />
     <None Include="triangle.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\camera.h" />
     <ClInclude Include="..\include\chunk.h" />
+    <ClInclude Include="..\include\do_not_edit.h" />
+    <ClInclude Include="..\include\tiny_obj_loader.h" />
+    <ClInclude Include="obj-load.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

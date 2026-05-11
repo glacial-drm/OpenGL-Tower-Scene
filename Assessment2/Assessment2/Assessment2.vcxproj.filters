@@ -41,9 +41,48 @@
     <None Include="texture.vert">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="skybox.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="skybox.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shadow.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shadow.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="reflection.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="reflection.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="refraction.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="alpha.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="alpha.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\chunk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\tiny_obj_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\do_not_edit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="obj-load.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

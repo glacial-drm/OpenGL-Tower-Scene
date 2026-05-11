@@ -136,12 +136,11 @@
     <ClCompile Include="Lab6b.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="texture.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="triangle.frag" />
     <None Include="triangle.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

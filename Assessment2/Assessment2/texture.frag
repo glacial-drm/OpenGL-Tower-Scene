@@ -2,7 +2,7 @@
 
 layout (location = 0) out vec4 fColour;
 
-// in vec3 col;
+in vec3 col;
 in vec2 tex;
 
 uniform sampler2D Texture;
