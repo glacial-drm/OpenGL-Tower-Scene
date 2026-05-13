@@ -187,7 +187,7 @@ void generateDepthMap(unsigned int shadowShaderProgram, ShadowStruct shadow, glm
 	glViewport(0, 0, SH_MAP_WIDTH, SH_MAP_HEIGHT); 
 
 	
-glBindFramebuffer(GL_FRAMEBUFFER, shadow.FBO); // bind depth map buffer, specify that OpenGL should write z-values to previously created depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, shadow.FBO); // bind depth map buffer, specify that OpenGL should write z-values to previously created depth buffer
 	glClear(GL_DEPTH_BUFFER_BIT); // clear depth buffer so we can store new z-values
 	
 	// Render scene using model matrices

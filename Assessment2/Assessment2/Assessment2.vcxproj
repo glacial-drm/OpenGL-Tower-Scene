@@ -134,10 +134,17 @@
   <ItemGroup>
     <ClCompile Include="..\include\GL\gl3w.c" />
     <ClCompile Include="Assessment2.cpp" />
+    <ClCompile Include="particle_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="alpha.frag" />
     <None Include="alpha.vert" />
+    <None Include="particle.frag" />
+    <None Include="particle.vert" />
+    <None Include="phongAlpha.frag" />
+    <None Include="phongAlpha.vert" />
+    <None Include="phongTexture.frag" />
+    <None Include="phongTexture.vert" />
     <None Include="reflection.frag" />
     <None Include="reflection.vert" />
     <None Include="refraction.frag" />
@@ -156,8 +163,9 @@
     <ClInclude Include="..\include\camera.h" />
     <ClInclude Include="..\include\chunk.h" />
     <ClInclude Include="..\include\do_not_edit.h" />
+    <ClInclude Include="..\include\obj-load.h" />
+    <ClInclude Include="..\include\particle_generator.h" />
     <ClInclude Include="..\include\tiny_obj_loader.h" />
-    <ClInclude Include="obj-load.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

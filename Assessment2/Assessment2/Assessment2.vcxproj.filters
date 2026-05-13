@@ -21,6 +21,9 @@
     <ClCompile Include="..\include\GL\gl3w.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="particle_generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="phong.frag">
@@ -68,6 +71,24 @@
     <None Include="alpha.vert">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="phongTexture.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongTexture.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongAlpha.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongAlpha.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="particle.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="particle.vert">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\chunk.h">
@@ -82,7 +103,10 @@
     <ClInclude Include="..\include\do_not_edit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="obj-load.h">
+    <ClInclude Include="..\include\obj-load.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\particle_generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
