@@ -52,14 +52,19 @@ int main(int argc, char** argv)
 	GLuint program = CompileShader("mvp.vert", "col.frag");
 
 	std::vector<point> ctrl_points;
-	ctrl_points.push_back(point(-5.f, -4.f, 0.f));
+	ctrl_points.push_back(point(-2.5f, -4.f, 0.f));
 	ctrl_points.push_back(point(-5.f, 4.f, 0.f));
 	ctrl_points.push_back(point(5.f, -4.f, 0.f));
 	ctrl_points.push_back(point(5.f, 4.f, 0.f));
+	ctrl_points.push_back(point(2.f, 4.f, 0.f));
+	ctrl_points.push_back(point(-2.f, 4.f, 0.f));
+	//ctrl_points.push_back(point(0.f, 0.f, 0.f));
 
 	int num_evals = 30;
 	std::vector<point> curve = EvaluateBezierCurve(ctrl_points, num_evals);
 	
+	std::cout << curve.size();
+
 	int num_curve_verts = 0;
 	int num_curve_floats = 0;
 	float* curve_vertices = MakeFloatsFromVector(curve, num_curve_verts, num_curve_floats, 0.f, 0.f, 0.f);

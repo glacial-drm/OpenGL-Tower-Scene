@@ -26,12 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="phong.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="phong.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="triangle.frag">
       <Filter>Source Files</Filter>
     </None>
@@ -87,6 +81,24 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="particle.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongShadow.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongShadow.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongDirectional.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongDirectional.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongPositional.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongSpot.frag">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
