@@ -98,6 +98,15 @@
     <None Include="phongSpot.frag">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="phong.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongTextureArr.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongTextureArr.frag">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\chunk.h">

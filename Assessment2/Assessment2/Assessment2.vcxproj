@@ -141,6 +141,7 @@
     <None Include="alpha.vert" />
     <None Include="particle.frag" />
     <None Include="particle.vert" />
+    <None Include="phong.vert" />
     <None Include="phongAlpha.frag" />
     <None Include="phongAlpha.vert" />
     <None Include="phongDirectional.frag" />
@@ -150,6 +151,8 @@
     <None Include="phongSpot.frag" />
     <None Include="phongTexture.frag" />
     <None Include="phongTexture.vert" />
+    <None Include="phongTextureArr.frag" />
+    <None Include="phongTextureArr.vert" />
     <None Include="reflection.frag" />
     <None Include="reflection.vert" />
     <None Include="refraction.frag" />

@@ -7,10 +7,12 @@ layout(location = 2) in vec3 vNor; // Normal input vector
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 projectedLightSpaceMatrix;
 
 out vec2 tex;
 out vec3 nor; // Normal output vector
 out vec3 FragPosWorldSpace; // Output fragment position in world space -> calculate the illumination
+out vec4 FragPosProjectedLightSpace;
 
 void main()
 {
@@ -18,4 +20,5 @@ void main()
 	tex = vTex;
 	nor = mat3(transpose(inverse(model))) * vNor; // transpose() and inverse() esnure normal remains perpendicular to the surface
 	FragPosWorldSpace = vec3(model * vPos); // Transform vertex position to world space
+	FragPosProjectedLightSpace = projectedLightSpaceMatrix * model * vPos; // transform vertex to projected light space
 }

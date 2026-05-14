@@ -5,6 +5,9 @@ layout (location = 0) out vec4 fColour;
 in vec2 tex;
 in vec3 nor; // input normal vector ver
 in vec3 FragPosWorldSpace; // input frag pos in world space var
+in vec4 FragPosProjectedLightSpace;
+
+uniform sampler2D shadowMap;
 
 // variable names match render loop names
 uniform vec3 lightDirection;
@@ -15,6 +18,39 @@ uniform vec3 camPos;
 uniform sampler2D Texture;
 
 vec3 text;
+
+float shadowOnFragment(vec4 FragPosProjectedLightSpace)
+{
+	// shadow map is a copy of light space z-buffer, e.g. from pov of light source
+	// OpenGL normalises projected light space and transforms resultant NDC space to screen space
+	// frag shader contains frag pos in projected light space as input var
+		// we compare z-value of this frag, e.g. dist to light, with dist to fragment closest to light source (one that is hence illuminated and stored in depth map)
+
+	// normalise projected light space fragment pos and transform to screen space
+	vec3 ndc = FragPosProjectedLightSpace.xyz / FragPosProjectedLightSpace.w;
+	vec3 ss = (ndc+1)*0.5;
+
+	// get dist of fragment to light directly from z-value of fragment in screen space
+	float fragDepth = ss.z;
+	
+	// get dist of frag closest to light source, and hence illuminated from shadow map, using x and y coords of fragment in projected light space and OpenGl texture sampling 
+	// hence we only need red component from texel
+	float litDepth = texture(shadowMap, ss.xy).r;
+
+	// create bias to resolve shadow acne (also add to shadow below)
+	vec3 Nnor = normalize(nor);
+	vec3 Ntolight = normalize(-lightDirection);
+	float bias = max(0.04 * (1.0 - dot(Nnor, Ntolight)), 0.005);
+	
+	float shadow = 0.f;
+	// fgragment is in shadow if fragment depth is greater than dist to fragment closest to light source
+	shadow = fragDepth > (litDepth+bias) ? 1.0 : 0.0;
+
+	if (fragDepth > 1) // fix far distance shadow mess by making forcing fragments outside view volume to be illuminated
+		shadow = 0.f;
+
+	return shadow;
+}
 
 float CalculateDirectionalIllumination()
 {

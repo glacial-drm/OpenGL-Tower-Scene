@@ -34,6 +34,7 @@ glm::vec3 lightDirection = glm::vec3(0.f, -1.f, 0.f);
 glm::vec3 lightPos = glm::vec3(0.f, 0.f, 0.f);
 
 SCamera Camera;
+ShadowStruct shadow;
 
 std::map<string, GLuint> VAOs;
 std::map<string, GLuint> VBOs;
@@ -530,6 +531,282 @@ bool weatherCondition() {
 }
 
 
+void drawWithShadow() {
+	// Constant view and projection
+	glm::mat4 view = glm::mat4(1.f);
+	view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
+	glm::mat4 projection = glm::mat4(1.f);
+	projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, .1f, 20000.f);
+
+
+	float near_plane = 0.0f, far_plane = 20000.f; // taken from projection matrix in draw()
+	// projection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
+	// view = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
+
+	// Procedural verts
+	glUseProgram(shaderPrograms["shadow"]);
+
+
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glm::mat4 model = glm::mat4(1.f);
+	model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
+	model = glm::translate(model, glm::vec3(.1f, -2.5f, 0.f));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+	glBindVertexArray(VAOs["preset"]);
+
+	// Interactive obj / weather check
+	cout << Camera.Position.x << " " << Camera.Position.y << " " << Camera.Position.z << endl;
+	// cout << glm::distance(Camera.Position, glm::vec3(-6200.f, 7600.f, -3400.f));
+	glBindTexture(GL_TEXTURE_2D, textures["terrain"]);
+	glDrawArrays(GL_TRIANGLES, 0, floatTotals["vertexTotal"]);
+	glBindVertexArray(0);
+
+	// Tower
+	glUseProgram(shaderPrograms["shadow"]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	model = glm::mat4(1.f);
+	model = glm::translate(model, glm::vec3(-6300.f, 80.f, -3500.f));
+	model = glm::scale(model, glm::vec3(7500.f, 7500.f, 7500.f));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+	glBindVertexArray(VAOs["tower"]);
+
+	if (weatherCondition()) {
+		glBindTexture(GL_TEXTURE_2D, textures["tower-dark"]);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, textures["tower"]);
+	}
+	glDrawArrays(GL_TRIANGLES, 0, floatTotals["tower"]);
+	glBindVertexArray(0);
+
+
+
+	if (weatherCondition()) {
+		// Tornado 1
+		glUseProgram(shaderPrograms["shadow"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+
+		//model = glm::translate(model, glm::vec3(-6000.f, 1400.f, -5500.f)); // original tornado
+		//model = glm::scale(model, glm::vec3(1250.f, 3000.f, 1250.f));
+
+		model = glm::translate(model, glm::vec3(-6000.f, -520.f, -1500.f));
+		model = glm::scale(model, glm::vec3(1.2f, 7.f, 1.2f));
+		model = glm::rotate(model, (float)glfwGetTime() / 0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["tornado"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["tornado"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["tornado"]);
+		glBindVertexArray(0);
+
+		// Tornado 2
+		glUseProgram(shaderPrograms["shadow"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6000.f, -520.f, -5500.f));
+		model = glm::scale(model, glm::vec3(1.2f, 7.f, 1.2f));
+		model = glm::rotate(model, (float)glfwGetTime() / -0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["tornado"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["tornado"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["tornado"]);
+		glBindVertexArray(0);
+
+
+		// Bezier Curve 1
+		glUseProgram(shaderPrograms["shadow"]);
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6000.f, 0.f, -1300.f));
+		model = glm::rotate(model, (float)glfwGetTime() / -0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(90.f, 90.f, 90.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["curve"]);
+		glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
+
+		//glBindVertexArray(VAOs["control"]);
+		//glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
+
+		// Bezier Curve 2
+		glUseProgram(shaderPrograms["shadow"]);
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6000.f, 0.f, -5600.f));
+		model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::rotate(model, (float)glfwGetTime() / 0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(90.f, 90.f, 90.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["curve"]);
+		glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
+
+		//glBindVertexArray(VAOs["control"]);
+		//glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
+
+	}
+	else {
+
+		// CLOUDS INSTEAD ROTATE IN CIRCLE AROUND TOWER
+		glUseProgram(shaderPrograms["shadow"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6300.f, 1000.f, -3700.f));
+		model = glm::rotate(model, (float)glfwGetTime() / 0.5f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(30.f, 30.f, 30.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		// cloud 2
+		glBindVertexArray(VAOs["cloud"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["cloud"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["cloud"]);
+		glBindVertexArray(0);
+
+		glUseProgram(shaderPrograms["shadow"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6300.f, 3000.f, -3700.f));
+		model = glm::rotate(model, (float)glfwGetTime() / -1.f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(32.f, 32.f, 32.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["cloud"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["cloud"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["cloud"]);
+		glBindVertexArray(0);
+
+		// cloud 3
+		glBindVertexArray(VAOs["cloud"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["cloud"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["cloud"]);
+		glBindVertexArray(0);
+
+		glUseProgram(shaderPrograms["shadow"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6300.f, 5000.f, -3700.f));
+		model = glm::rotate(model, (float)glfwGetTime() / 2.f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(35.f, 35.f, 35.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["cloud"]);
+		// glBindTexture(GL_TEXTURE_2D, textures["cloud"]);
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["cloud"]);
+		glBindVertexArray(0);
+
+	}
+
+	// Bind arrays: Bell
+	GLuint program = shaderPrograms["shadow"];
+	if (weatherCondition()) {
+		program = shaderPrograms["shadow"];
+	}
+
+	glUseProgram(program);
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	model = glm::mat4(1.f);
+	model = glm::translate(model, glm::vec3(-6300.f, 7080.f, -3500.f));
+	model = glm::rotate(model, glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
+	model = glm::scale(model, glm::vec3(80.f, 80.f, 80.f));
+	glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+	glBindVertexArray(VAOs["bell"]);
+	glActiveTexture(GL_TEXTURE0); // reflection, refraction ------------------------------------- (and switch program to appropriate program)
+	if (weatherCondition()) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textures["skybox-dark"]);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textures["skybox"]);
+	}
+	glDrawArrays(GL_TRIANGLES, 0, floatTotals["bell"]);
+	glBindVertexArray(0);
+
+
+	// particles --------- THESE NOW USE THE CURVE HF (make like cool stuff surround tower
+	model = glm::mat4(1.f);
+	model = glm::scale(model, glm::vec3(80.f, 80.f, 80.f));
+	Particles->Draw(view, projection, model);
+
+
+	// boxes test
+	glUseProgram(shaderPrograms["shadow"]);
+
+	// Copy light direction, light colour, camera position, light position
+	glUniform3f(glGetUniformLocation(shaderPrograms["shadow"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["shadow"], "lightColour"), 0.f, 0.f, 1.f);
+	glUniform3f(glGetUniformLocation(shaderPrograms["shadow"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["shadow"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+	drawFloorAndCubes(shaderPrograms["shadow"]);
+
+	// Transparent verts
+	glUseProgram(shaderPrograms["shadow"]);
+
+	std::map<float, glm::vec3> sorted_positions;
+	for (int i = 0; i < alphaChunkPositions.size(); i++)
+	{
+		glm::vec3 v = glm::vec3(Camera.Position.x, Camera.Position.y, Camera.Position.z) - alphaChunkPositions[i];
+		float l = glm::length(v);
+		sorted_positions[l] = alphaChunkPositions[i];
+	}
+
+	glBindVertexArray(VAOs["alpha"]);
+	for (auto it = sorted_positions.rbegin(); it != sorted_positions.rend(); ++it) // uses vector of sorted vectors (above) in reverse: "rbegin", "rend"
+	{
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, it->second);
+		model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
+		model = glm::scale(model, glm::vec3(3.3f, 3.3f, 3.3f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, floatTotals["alpha"]);
+	}
+
+	// Skybox
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+
+	glUseProgram(shaderPrograms["shadow"]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	model = glm::mat4(1.f);
+	model = glm::translate(model, glm::vec3(-5000.f, 300.f, -3500.f));
+	model = glm::scale(model, glm::vec3(10000.f, 10000.f, 10000.f));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["shadow"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+	glBindVertexArray(VAOs["skybox"]);
+	glActiveTexture(GL_TEXTURE0);
+	if (weatherCondition()) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textures["skybox-dark"]);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textures["skybox"]);
+	}
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+
+	glDepthFunc(GL_LESS); // set depth function back to default
+}
 
 
 
@@ -546,17 +823,29 @@ void draw() {
 	glm::mat4 projection = glm::mat4(1.f);
 	projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, .1f, 20000.f);
 	
-	
+
 	float near_plane = 0.0f, far_plane = 20000.f; // taken from projection matrix in draw()
-	// projection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
-	// view = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
+	glm::mat4 lightProjection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
+	glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f));
+	// lightView = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
+	glm::mat4 projectedLightSpaceMatrix = lightProjection * lightView; // create projected light space matrix by multiplying the light projection and light view matrices
 
 	// Phong lighting parameters
 	glUseProgram(shaderPrograms["phong-texture"]);
+	glBindTexture(GL_TEXTURE_2D, shadow.Texture);
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-texture"], "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightColour"), 1.f, 1.f, 1.f);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+	glUseProgram(shaderPrograms["phong-texture-arr"]);
+	glBindTexture(GL_TEXTURE_2D, shadow.Texture);
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "lightColour"), 1.f, 1.f, 1.f);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	glUseProgram(shaderPrograms["phong-spot"]);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
@@ -565,6 +854,8 @@ void draw() {
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	glUseProgram(shaderPrograms["phong-directional"]);
+	//glBindTexture(GL_TEXTURE_2D, shadow.Texture);
+	//glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightColour"), 1.f, 1.f, 1.f);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
@@ -577,14 +868,14 @@ void draw() {
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-positional"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	// Procedural verts
-	glUseProgram(shaderPrograms["phong-directional"]);
+	glUseProgram(shaderPrograms["phong-texture-arr"]);
 
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glm::mat4 model = glm::mat4(1.f);
 	model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
 	model = glm::translate(model, glm::vec3(.1f, -2.5f, 0.f));
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-texture-arr"], "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 	glBindVertexArray(VAOs["preset"]);
 
@@ -860,7 +1151,7 @@ void generateDepthMap(unsigned int shadowShaderProgram, ShadowStruct shadow, glm
 	glUseProgram(shadowShaderProgram);
 	glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
 
-	draw(); // draw and write z-values to framebuffer in shadow structure
+	drawWithShadow(); // draw and write z-values to framebuffer in shadow structure
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -913,7 +1204,7 @@ int main(int argc, char** argv)
 	int chunkVertTotal = dim * dim * 6; // *6 = *3 (triangle) * 2 (2 triangles per square)
 	floatTotals["vertexTotal"] = chunkVertTotal * chunksX * chunksZ; // procedural | testVertices // 
 
-	int chunkVertexFloatTotal = 8; // 9 for colour (3 components) // 8 for texture (2 components)
+	int chunkVertexFloatTotal = 9; // 9 for colour (3 components) // 8 for texture (2 components)
 	int chunkFloatSize = chunkVertTotal * chunkVertexFloatTotal; // *9 as 9 components per vert (3 pos, 3 col, 3 nor)
 	int floatTotal = chunkFloatSize * chunksX * chunksZ;
 
@@ -1067,9 +1358,14 @@ int main(int argc, char** argv)
 	shaderPrograms["particle"] = CompileShader("particle.vert", "particle.frag");
 	shaderPrograms["phong-texture"] = CompileShader("phongTexture.vert", "phongTexture.frag");
 	shaderPrograms["phong-shadow"] = CompileShader("phongShadow.vert", "phongShadow.frag");
-	shaderPrograms["phong-directional"] = CompileShader("phong.vert", "phongDirectional.frag");
+	shaderPrograms["phong-directional"] = CompileShader("phongShadow.vert", "phongDirectional.frag");
 	shaderPrograms["phong-spot"] = CompileShader("phong.vert", "phongSpot.frag");
 	shaderPrograms["phong-positional"] = CompileShader("phong.vert", "phongPositional.frag");
+
+	// phongTexture () + array position
+	shaderPrograms["phong-texture"] = CompileShader("phongTexture.vert", "phongTexture.frag");
+	shaderPrograms["phong-texture-arr"] = CompileShader("phongTextureArr.vert", "phongTextureArr.frag");
+	shaderPrograms["texture"] = CompileShader("texture.vert", "texture.frag");
 
 	// Broken
 	shaderPrograms["shadow"] = CompileShader("shadow.vert", "shadow.frag");
@@ -1095,9 +1391,11 @@ int main(int argc, char** argv)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float)* floatTotal, proceduralVerts, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, (chunkVertexFloatTotal * sizeof(float)), (void*)(9 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 
@@ -1305,11 +1603,50 @@ int main(int argc, char** argv)
 	textures["eagle"] = loadTexture("resources/textures/eagle.png");
 
 	// Chunks
-	textures["rock"] = loadTexture("resources/textures/rock.jpg");
-	textures["grass"] = loadTexture("resources/textures/grass.jpg");
-	textures["water"] = loadTexture("resources/textures/water.jpg");
-	textures["terrain"] = loadTexture("resources/textures/terrain-atlas.jpg");
+	//textures["rock"] = loadTexture("resources/textures/rock.jpg"); //1300 x 1300
+	//textures["grass"] = loadTexture("resources/textures/grass.jpg"); //1200 x 1200
+	//textures["water"] = loadTexture("resources/textures/water.jpg"); // 1024 x 1024
+	
+	//textures["terrain"] = loadTexture("resources/textures/terrain-atlas.jpg");
+	
+	
+	int w, h, nrComponents;
+	uint8_t *pixels1 = stbi_load("resources/textures/water.jpg", &w, &h, &nrComponents, 3);
+	glGenTextures(1, &textures["water"]);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textures["water"]);
+	glTexImage2D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels1);
+	
+	uint8_t* pixels2 = stbi_load("resources/textures/grass.jpg", &w, &h, &nrComponents, 3);
+	glGenTextures(1, &textures["grass"]);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textures["grass"]);
+	glTexImage2D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels2);
+	
+	uint8_t* pixels3 = stbi_load("resources/textures/water.jpg", &w, &h, &nrComponents, 3);
+	glGenTextures(1, &textures["water"]);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textures["water"]);
+	glTexImage2D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels3);
 
+	const int imgWidth = 1024;
+	const int imgHeight = 1024;
+	const int imgNum = 3;
+	
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textures["terrain"]);
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, imgWidth, imgHeight, imgNum, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	
+	// glTexStorage3D(GL_TEXTURE_2D_ARRAY, 8, GL_RGBA8, imgWidth, imgHeight, 3);
+	
+	
+	// unsigned char* pixels1 = stbi_load("resources/textures/water.jpg", &w, &h, &nrComponents, 3);
+	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, textures["water"], imgWidth, imgHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)pixels1);
+	// unsigned char* pixels2 = stbi_load("resources/textures/grass.jpg", &w, &h, &nrComponents, 3);
+	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, textures["grass"], imgWidth, imgHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)pixels2);
+	// unsigned char* pixels3 = stbi_load("resources/textures/rock.jpg", &w, &h, &nrComponents, 3);
+	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, textures["rock"], imgWidth, imgHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)pixels3);
+	
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
 	// Particles and generation
 	Particles = new ParticleGenerator(
@@ -1320,7 +1657,7 @@ int main(int argc, char** argv)
 	Particles->Update(0.1f, glm::vec3(0.f, 0.f, 0.f), 2, glm::vec2(2.0f)); // ParticleGenerator::Update(float dt, glm::vec2 position, unsigned int newParticles, glm::vec2 offset, glm::vec2 velocity)
 
 	// Shadows
-	ShadowStruct shadow = setup_shadowmap(SH_MAP_WIDTH, SH_MAP_HEIGHT);
+	shadow = setup_shadowmap(SH_MAP_WIDTH, SH_MAP_HEIGHT);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -1359,10 +1696,11 @@ int main(int argc, char** argv)
 
 		generateDepthMap(shaderPrograms["shadow"], shadow, projectedLightSpaceMatrix);
 
-		saveShadowMapToBitmap(shadow.Texture, SH_MAP_WIDTH, SH_MAP_HEIGHT);
+		//saveShadowMapToBitmap(shadow.Texture, SH_MAP_WIDTH, SH_MAP_HEIGHT);
 
-		renderWithShadow(shaderPrograms["phong-shadow"], shadow, projectedLightSpaceMatrix);
-
+		// renderWithShadow(shaderPrograms["phong-shadow"], shadow, projectedLightSpaceMatrix);
+		glViewport(0, 0, WIDTH, HEIGHT);
+		draw();
 
 		glfwSwapBuffers(window);
 

@@ -7,6 +7,7 @@ layout(location = 2) in vec3 vNor; // Normal input vector
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 projectedLightSpaceMatrix;
 
 out vec3 col;
 out vec3 nor; // Normal output vector

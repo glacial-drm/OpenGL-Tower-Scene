@@ -55,24 +55,17 @@ chunk* createChunk(glm::vec3 origin, int height, bool isPerlin) {
 //}
 
 float textureChunk(float height) {
-	float texture = 0.3f;
 
-	// not only do we need to know the texture atlas coords
-		// for each height to select a given texture
-	// but we also need to know what part of the texture (vertices) we're on
-		// THIS IS AS TEXTURES TAKE COORDS FROM THE ATLAS
-			
-	
-	// essentially this encourages increasing the stride of our chunks and reducing the dim
+	float texArrPos = 1;
 
 	if (height < 2) {
-		texture = 0.f;
+		texArrPos = 0;
 	}
 	else if (height > 5) {
-		texture = 0.6f;
+		texArrPos = 2;
 	}
 
-	return texture;
+	return texArrPos;
 }
 
 float* colourChunk(float height) {
@@ -113,14 +106,20 @@ void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk, floa
 		// texture has to repeat each square
 		// then simply render the triangles from (0,0 to 1,1)
 			// texture atlas would be aligning all 3 tex images, then applying a 0.3 or 0.6 modifier to x ----------------------------
-		
-		verts[offset + 6] = texX * textureChunk(height);
+				// lol no
+		verts[offset + 6] = texX;
 		verts[offset + 7] = texY;
 	}
 	else if (floatPerVert == 7) { // alpha
 		verts[offset + 6] = 0.5f;
 	}
 	else { // 9 | normals
+		//
+		verts[offset + 3] = texX;
+		verts[offset + 4] = texY;
+		verts[offset + 5] = textureChunk(height); // texture position in array
+
+		// ----------- original (normals)
 		verts[offset + 6] = 0.f;
 		verts[offset + 7] = 1.f;
 		verts[offset + 8] = 0.f;

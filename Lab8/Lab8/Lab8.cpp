@@ -90,12 +90,6 @@ void drawFloorAndCubes(unsigned int shaderProgram)
 {
 	glBindVertexArray(VAOs[0]);
 
-	float near_plane = 0.0f, far_plane = -10000.f;
-	glm::mat4 lightProjection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
-	glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
-	glm::mat4 projectedLightSpaceMatrix = lightProjection * lightView; // create projected light space matrix by multiplying the light projection and light view matrices
-
-
 	//floor
 	glm::mat4 model = glm::mat4(1.f);
 	model = glm::translate(model, glm::vec3(0, -3, 0));
