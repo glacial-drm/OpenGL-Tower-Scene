@@ -41,7 +41,7 @@ float CalculateDirectionalIllumination()
 
 float CalculatePositionalIllumination()
 {
-	float ambient = 0.1; // , ambient = k = 0.1
+	float ambient = 10000; // , ambient = k = 0.1
 
 	// Diffuse calcs
 	vec3 Nnor = normalize(nor); 
@@ -57,7 +57,7 @@ float CalculatePositionalIllumination()
 	vec3 NcamDirection = normalize(camDirection);
 
 	
-	int shininess = 128;
+	int shininess = 10000;
 	float specular = pow(max(dot(NcamDirection, NrefLight), 0), shininess); // result of dot product
 
 	// Attenuation calcs
@@ -72,7 +72,7 @@ float CalculatePositionalIllumination()
 
 float CalculateSpotIllumination()
 {
-	float ambient = 0.1; // , ambient = k = 0.1
+	float ambient = 10000; // , ambient = k = 0.1
 
 	// Diffuse calcs
 	vec3 Nnor = normalize(nor); 
@@ -86,7 +86,7 @@ float CalculateSpotIllumination()
 	vec3 camDirection = camPos - FragPosWorldSpace;
 	vec3 NcamDirection = normalize(camDirection);
 	
-	int shininess = 128;
+	int shininess = 1000;
 	float specular = pow(max(dot(NcamDirection, NrefLight), 0), shininess); // result of dot product
 
 	// Attenuation calcs
@@ -114,9 +114,9 @@ float CalculateSpotIllumination()
 
 void main()
 {
-	float phong = CalculateDirectionalIllumination();
+	// float phong = CalculateDirectionalIllumination();
 	// float phong = CalculatePositionalIllumination();
-	// float phong = CalculateSpotIllumination();
+	float phong = CalculateSpotIllumination();
 	text = vec3(texture(Texture, tex));
 
 	fColour = vec4(phong * text * lightColour, 1.f);

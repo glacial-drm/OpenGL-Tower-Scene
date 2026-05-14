@@ -42,11 +42,11 @@ ShadowStruct setup_shadowmap(int w, int h)
 	glBindFramebuffer(GL_FRAMEBUFFER, shadow.FBO);
 	
 	// attaches a texture image to a framebuffer obj
-	// target = GL_FRAMEBUFFER
-	// attachment = GL_DEPTH_ATTACHMENT so the values from depth buffer are storedi n the texture image
-	// texttarget = GL_TEXTURE_2D
-	// texture is set to member object specifies the texture object
-	// level = 0
+		// target = GL_FRAMEBUFFER
+		// attachment = GL_DEPTH_ATTACHMENT so the values from depth buffer are storedi n the texture image
+		// texttarget = GL_TEXTURE_2D
+		// texture is set to member object specifies the texture object
+		// level = 0
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow.Texture, 0);
 	
 	glDrawBuffer(GL_NONE); // set to GL_NONE so no colour buffers are written during the render pass

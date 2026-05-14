@@ -26,7 +26,7 @@ struct SCamera
 	const float MovementSpeed = .5f;
 	float MouseSensitivity = 1.f;
 
-	glm::vec3 Target;
+
 
 };
 
@@ -41,20 +41,16 @@ void InitCamera(SCamera& in)
 
 	in.Yaw = -90.f;
 	in.Pitch = 0.f;
-
-	in.Target = glm::vec3(0.f, 0.f, 0.f);
 }
 
-float cam_dist = 5.0f;
+float cam_dist = 1000.f;
 
-void cameraRotateAroundObject(SCamera& in, glm::vec3 target,
+void MoveAndOrientCamera(SCamera& in, glm::vec3 target,
 	float distance, float xoffset, float yoffset) // Camera moves on an "imaginary sphere surrounding the model" - camera is reposition and reoriented at the same time
 {
 	// Params:
 		// in - camera object
 		// target - position in world space that is the focus of the camera
-			// NOW SEPARATE FROM THE STRUCT'S TARGET (the one there may not be permanent)
-			// make the obj's position in space the target
 		// distance - distance from the camera to the focus traget
 		// xoffset, yoffset - amount to move the camera around the imaginary sphere
 

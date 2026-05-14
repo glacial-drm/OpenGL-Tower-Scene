@@ -144,7 +144,6 @@
     <None Include="phongAlpha.frag" />
     <None Include="phongAlpha.vert" />
     <None Include="phongDirectional.frag" />
-    <None Include="phongDirectional.vert" />
     <None Include="phongPositional.frag" />
     <None Include="phongShadow.frag" />
     <None Include="phongShadow.vert" />

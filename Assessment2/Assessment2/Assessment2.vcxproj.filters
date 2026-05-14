@@ -92,9 +92,6 @@
     <None Include="phongDirectional.frag">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongDirectional.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="phongPositional.frag">
       <Filter>Source Files</Filter>
     </None>

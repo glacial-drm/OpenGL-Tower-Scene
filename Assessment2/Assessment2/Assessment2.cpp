@@ -30,13 +30,10 @@
 #define SH_MAP_HEIGHT 2048
 
 //light direction & position variables here
-glm::vec3 lightDirection = glm::vec3(0.1f, -.81f, -.61f);
-glm::vec3 lightPos = glm::vec3(2.f, 6.f, 7.f);
-glm::vec3 newlightPos = glm::vec3(-6300.f, 6000.f, -3500.f);
+glm::vec3 lightDirection = glm::vec3(0.f, -1.f, 0.f);
+glm::vec3 lightPos = glm::vec3(0.f, 0.f, 0.f);
 
 SCamera Camera;
-SCamera rotateCamera; // MULTIPLE CAMERAS  ------------------------------------
-SCamera walkCamera;
 
 std::map<string, GLuint> VAOs;
 std::map<string, GLuint> VBOs;
@@ -45,6 +42,7 @@ std::map<string, GLuint> shaderPrograms;
 std::map<string, unsigned int> textures;
 
 int num_curve_verts, num_ctrl_verts;
+std::vector<point> curve;
 
 ParticleGenerator* Particles;
 
@@ -174,7 +172,7 @@ vector<std::string> facesDark
 // Lab Code (remove) -----------------------------
 void drawFloorAndCubes(unsigned int shaderProgram)
 {
-	glBindVertexArray(VAOs[0]);
+	glBindVertexArray(VAOs["cubes"]);
 
 	//floor
 	glm::mat4 model = glm::mat4(1.f);
@@ -201,6 +199,15 @@ void drawFloorAndCubes(unsigned int shaderProgram)
 
 }
 
+float sine(float f) {
+	
+	return glm::sin(glm::radians(f));
+}
+float csine(float f) {
+
+	return glm::cos(glm::radians(f));
+}
+
 // Camera 
 // CONTAINS SPOTLIGHT CODE -----------------------------
 void processKeyboardRotate(GLFWwindow* window)
@@ -209,37 +216,45 @@ void processKeyboardRotate(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 
 	// Set light direction & position to point from the current camera front / pos
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
 	{
-		lightDirection = rotateCamera.Front;
-		lightPos = rotateCamera.Position;
+		lightDirection = Camera.Front;
+		lightPos = Camera.Position;
 	}
+	float deltaTime = 0.0f;
+	float lastFrame = 0.0f;
+
+	float currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
+
+	float cam_speed = 0.1f * deltaTime; //0.1f default
 
 	float x_offset = 0.f;
 	float y_offset = 0.f;
 	bool cam_changed = false;
 	// Rotate/Orient the camera in the specified direction (arrow keys)
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		x_offset = 0.f;
-		y_offset = 1.f;
+		y_offset = cam_speed;
 
 		cam_changed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		x_offset = 0.f;
-		y_offset = -1.f;
+		y_offset = -cam_speed;
 
 		cam_changed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		x_offset = -1.f;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		x_offset = -cam_speed;
 		y_offset = 0.f;
 
 		cam_changed = true;
 	}
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) // Offset camera by +1 in the x axis when the right arrow key is preseed
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		x_offset = 1.f;
+		x_offset = cam_speed;
 		y_offset = 0.f;
 
 		cam_changed = true;
@@ -248,13 +263,13 @@ void processKeyboardRotate(GLFWwindow* window)
 	// Zoom in and out
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
-		cam_dist -= .1f; // Declared in camera.h
+		cam_dist -= cam_speed / 10.f; // Declared in camera.h
 
 		cam_changed = true;
 	}
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 	{
-		cam_dist += .1f;
+		cam_dist += cam_speed / 10.f;
 
 		cam_changed = true;
 	}
@@ -263,7 +278,7 @@ void processKeyboardRotate(GLFWwindow* window)
 	// Perform relevant changes
 	if (cam_changed)
 	{
-		cameraRotateAroundObject(rotateCamera, glm::vec3(0.f, 0.f, 0.f), cam_dist, x_offset, y_offset);
+		MoveAndOrientCamera(Camera, glm::vec3(-6300.f, 5000.f, -3500.f), cam_dist, x_offset, y_offset);
 	}
 }
 
@@ -306,7 +321,6 @@ void processKeyboardWalkAround(GLFWwindow* window) // REF: https://learnopengl.c
 		Camera.Position += glm::normalize(glm::cross(Camera.Front, Camera.Up)) * cam_speed;
 	}
 	
-	// Camera.Position.y = 0.f; // force 0 if need be --------------------
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) // REF: https://learnopengl.com/code_viewer_gh.php?code=src/1.getting_started/7.4.camera_class/camera_class.cpp
@@ -507,7 +521,7 @@ unsigned int loadCubemap(vector<std::string> faces)
 
 bool weatherCondition() {
 
-	if (weatherFlag && glm::distance(Camera.Position, glm::vec3(-6200.f, 7600.f, -3400.f)) < 3000.f) {
+	if (weatherFlag /*&& glm::distance(Camera.Position, glm::vec3(-6200.f, 7600.f, -3400.f)) < 3000.f*/) {
 
 		return true;
 	}
@@ -515,25 +529,52 @@ bool weatherCondition() {
 	return false;
 }
 
+
+
+
+
+
+
+
+
+
+
 void draw() {
 	// Constant view and projection
 	glm::mat4 view = glm::mat4(1.f);
 	view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
 	glm::mat4 projection = glm::mat4(1.f);
 	projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, .1f, 20000.f);
+	
+	
+	float near_plane = 0.0f, far_plane = 20000.f; // taken from projection matrix in draw()
+	// projection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
+	// view = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
 
 	// Phong lighting parameters
 	glUseProgram(shaderPrograms["phong-texture"]);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightColour"), 1.f, 1.f, 1.f);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
-	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightPos"), newlightPos.x, newlightPos.y, newlightPos.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+	glUseProgram(shaderPrograms["phong-spot"]);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightColour"), 1.f, 1.f, 1.f);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	glUseProgram(shaderPrograms["phong-directional"]);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightColour"), 1.f, 1.f, 1.f);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+
+	glUseProgram(shaderPrograms["phong-positional"]);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-positional"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-positional"], "lightColour"), 1.f, 1.f, 1.f);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-positional"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-positional"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	// Procedural verts
 	glUseProgram(shaderPrograms["phong-directional"]);
@@ -548,8 +589,8 @@ void draw() {
 	glBindVertexArray(VAOs["preset"]);
 
 	// Interactive obj / weather check
-	cout << Camera.Position.x << Camera.Position.y << Camera.Position.z << endl;
-	cout << glm::distance(Camera.Position, glm::vec3(-6200.f, 7600.f, -3400.f));
+	cout << Camera.Position.x << " " << Camera.Position.y << " " << Camera.Position.z << endl;
+	// cout << glm::distance(Camera.Position, glm::vec3(-6200.f, 7600.f, -3400.f));
 	if (weatherCondition()) {
 		// glBindTexture(GL_TEXTURE_2D, textures["rock"]);
 	}
@@ -584,9 +625,9 @@ void draw() {
 
 	if(weatherCondition()){
 		// Tornado 1
-		glUseProgram(shaderPrograms["phong-directional"]);
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUseProgram(shaderPrograms["phong-positional"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		model = glm::mat4(1.f);
 
 		//model = glm::translate(model, glm::vec3(-6000.f, 1400.f, -5500.f)); // original tornado
@@ -594,8 +635,8 @@ void draw() {
 
 		model = glm::translate(model, glm::vec3(-6000.f, -520.f, -1500.f));
 		model = glm::scale(model, glm::vec3(1.2f, 7.f, 1.2f));
-		model = glm::rotate(model, (float)glfwGetTime() / -0.1f, glm::vec3(0.0f, 1.0f, .0f));
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::rotate(model, (float)glfwGetTime() / 0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(VAOs["tornado"]);
 		// glBindTexture(GL_TEXTURE_2D, textures["tornado"]);
@@ -603,18 +644,55 @@ void draw() {
 		glBindVertexArray(0);
 
 		// Tornado 2
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glUseProgram(shaderPrograms["phong-positional"]);
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-6000.f, -520.f, -5500.f));
 		model = glm::scale(model, glm::vec3(1.2f, 7.f, 1.2f));
-		model = glm::rotate(model, (float)glfwGetTime() / 0.1f, glm::vec3(0.0f, 1.0f, .0f));
-		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::rotate(model, (float)glfwGetTime() / -0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-positional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(VAOs["tornado"]);
 		// glBindTexture(GL_TEXTURE_2D, textures["tornado"]);
 		glDrawArrays(GL_TRIANGLES, 0, floatTotals["tornado"]);
 		glBindVertexArray(0);
+
+
+		// Bezier Curve 1
+		glUseProgram(shaderPrograms["triangle"]);
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6000.f, 0.f, -1300.f));
+		model = glm::rotate(model, (float)glfwGetTime() / -0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(90.f, 90.f, 90.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["curve"]);
+		glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
+
+		//glBindVertexArray(VAOs["control"]);
+		//glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
+
+		// Bezier Curve 2
+		glUseProgram(shaderPrograms["triangle"]);
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		model = glm::mat4(1.f);
+		model = glm::translate(model, glm::vec3(-6000.f, 0.f, -5600.f));
+		model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::rotate(model, (float)glfwGetTime() / 0.1f, glm::vec3(0.0f, 1.0f, .0f));
+		model = glm::scale(model, glm::vec3(90.f, 90.f, 90.f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindVertexArray(VAOs["curve"]);
+		glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
+
+		//glBindVertexArray(VAOs["control"]);
+		//glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
 
 	}
 	else{
@@ -641,7 +719,7 @@ void draw() {
 		model = glm::mat4(1.f);
 		model = glm::translate(model, glm::vec3(-6300.f, 3000.f, -3700.f));
 		model = glm::rotate(model, (float)glfwGetTime() / -1.f, glm::vec3(0.0f, 1.0f, .0f));
-		model = glm::scale(model, glm::vec3(32.f, 22.f, 22.f));
+		model = glm::scale(model, glm::vec3(32.f, 32.f, 32.f));
 		glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(VAOs["cloud"]);
@@ -699,44 +777,25 @@ void draw() {
 	glBindVertexArray(0);
 
 
-	// Bezier Curves
-	glUseProgram(shaderPrograms["triangle"]);
-
-	model = glm::mat4(1.f);
-	model = glm::scale(model, glm::vec3(80.f, 80.f, 80.f));
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "model"), 1, GL_FALSE, glm::value_ptr(model));
-	//view = glm::mat4(1.f);
-	//view = glm::translate(view, -glm::vec3(0.f, 0.f, 12.f));
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-	//projection = glm::perspective(glm::radians(45.f), (float)800 / (float)600, .01f, 100.f);
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["triangle"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-	glBindVertexArray(VAOs["curve"]);
-	glDrawArrays(GL_LINE_STRIP, 0, num_curve_verts);
-
-	glBindVertexArray(VAOs["control"]);
-	glDrawArrays(GL_POINTS, 0, num_ctrl_verts);
-
-
 	// particles --------- THESE NOW USE THE CURVE HF (make like cool stuff surround tower
 	model = glm::mat4(1.f);
 	model = glm::scale(model, glm::vec3(80.f, 80.f, 80.f));
 	Particles->Draw(view, projection, model);
 
 
-	//// boxes test
-	//glUseProgram(shaderPrograms["phong-directional"]);
+	// boxes test
+	glUseProgram(shaderPrograms["phong-directional"]);
 
-	//// Copy light direction, light colour, camera position, light position
-	//glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
-	//glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightColour"), 0.f, 0.f, 1.f);
-	//glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
-	//glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+	// Copy light direction, light colour, camera position, light position
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightColour"), 0.f, 0.f, 1.f);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
+	glUniform3f(glGetUniformLocation(shaderPrograms["phong-directional"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
-	//glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-	//glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-	//drawFloorAndCubes(shaderPrograms["phong-directional"]);
+	drawFloorAndCubes(shaderPrograms["phong-directional"]);
 
 	// Transparent verts
 	glUseProgram(shaderPrograms["alpha"]);
@@ -787,7 +846,7 @@ void draw() {
 	glDepthFunc(GL_LESS); // set depth function back to default
 }
 
-// Shadow ------------------------------------------------------ wouldn't this apply to all the geometry.....
+// Shadow
 void generateDepthMap(unsigned int shadowShaderProgram, ShadowStruct shadow, glm::mat4 projectedLightSpaceMatrix)
 {
 
@@ -801,7 +860,7 @@ void generateDepthMap(unsigned int shadowShaderProgram, ShadowStruct shadow, glm
 	glUseProgram(shadowShaderProgram);
 	glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
 
-	draw(); // draw and write z-values to framebuffer in shadow structure ------------------------------------- draw smth else
+	draw(); // draw and write z-values to framebuffer in shadow structure
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -947,40 +1006,37 @@ int main(int argc, char** argv)
 
 
 	// load models -----------------------------------
-		// HOUSE 1
-		// CAVE
-		// BIRD
-		// CLOUD MODEL
-			// surrounding tower
-		// Miku
-
-		// miku?
-		// tower exterior, interior would be a bit crazy
-			// if doing interior, make sure to make some parts procedural
-
-
-
-
 	float* towerVerts = load_model("resources/objs/tower.obj", floatTotals["tower"], false, false, false, true, false, false);
 	float* tornadoVerts = load_model("resources/objs/tornadoNew.obj", floatTotals["tornado"], false, false, false, false, false, true);
-	float* eagleVerts = load_model("resources/objs/eagle.obj", floatTotals["eagle"], true, false, false, false, false, false);
+	float* eagleVerts = load_model("resources/objs/eagle.obj", floatTotals["eagle"], false, false, false, false, false, false);
 	float* bellVerts = load_model("resources/objs/bell.obj", floatTotals["bell"], false, false, true, false, false, false);
 	float* cloudVerts = load_model("resources/objs/cloudNew.obj", floatTotals["cloud"], false, false, false, false, false, true);
 
 
 	// BEZIER CURVE ----------------------------------
+	
+	std::vector<float> angles;
+	float rotations = 1.5;
+	int angleTotal = 20;
+	for (int i = 0; i <= angleTotal; i++) {
+		angles.push_back((float)i * ((360.f * rotations)/angleTotal));
+	}
+	
+	float radius = 10;
+	float heightOffset = 3.f;
 	std::vector<point> ctrl_points;
-	ctrl_points.push_back(point(-5.f, -4.f, 0.f));
-	ctrl_points.push_back(point(-5.f, 4.f, 0.f));
-	ctrl_points.push_back(point(5.f, -4.f, 0.f));
-	ctrl_points.push_back(point(5.f, 4.f, 0.f));
+//	ctrl_points.push_back(point(0.f, 0.f, 0.f));
+	for (int i = 0; i <= angleTotal; i++) {
+		ctrl_points.push_back(point(sine(angles[i]) * radius, (float)(i+1) * heightOffset, csine(angles[i]) * radius));
+	}
+	// ctrl_points.push_back(point(0.f, 120.f, 0.f));
 
 	int num_evals = 30;
-	std::vector<point> curve = EvaluateBezierCurve(ctrl_points, num_evals);
+	curve = EvaluateBezierCurve(ctrl_points, num_evals);
 
 	
-	float* curve_vertices = MakeFloatsFromVector(curve, num_curve_verts, floatTotals["curve"], 0.f, 0.f, 0.f);
-	float* ctrl_vertices = MakeFloatsFromVector(ctrl_points, num_ctrl_verts, floatTotals["control"], 1.f, 0.f, 0.f);
+	float* curve_vertices = MakeFloatsFromVector(curve, num_curve_verts, floatTotals["curve"], 1.f, 1.f, 1.f);
+	float* ctrl_vertices = MakeFloatsFromVector(ctrl_points, num_ctrl_verts, floatTotals["control"], 1.f, 1.f, 0.f);
 
 
 
@@ -1016,7 +1072,7 @@ int main(int argc, char** argv)
 	shaderPrograms["phong-positional"] = CompileShader("phong.vert", "phongPositional.frag");
 
 	// Broken
-	shaderPrograms["shadowProgram"] = CompileShader("shadow.vert", "shadow.frag");
+	shaderPrograms["shadow"] = CompileShader("shadow.vert", "shadow.frag");
 	// shaderPrograms["phongAlphaProgram"] = CompileShader("phongAlpha.vert", "phongAlpha.frag");
 	
 	// Basic
@@ -1026,9 +1082,8 @@ int main(int argc, char** argv)
 	
 
 	
-
 	InitCamera(Camera);
-	InitCamera(rotateCamera);
+
 
 	// PRESET CHUNKS
 		// separate as uses "chunkVertexFloatTotal" and "floatTotal"
@@ -1092,11 +1147,11 @@ int main(int argc, char** argv)
 	glBindVertexArray(VAOs["eagle"]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs["eagle"]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * floatTotals["eagle"], eagleVerts, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(float)), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (8 * sizeof(float)), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, (8 * sizeof(float)), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, (9 * sizeof(float)), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 
@@ -1275,14 +1330,36 @@ int main(int argc, char** argv)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// shadow setup
-		float near_plane = -10000.0f, far_plane = 10000.f;
-		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-		glm::mat4 lightView = glm::lookAt(newlightPos, newlightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
+			// mess with vars here and in shader?
+			// welp, time to test with cubes again -------------------------------------------------
+			// try getting cubes to show, the floor doesn't have a shadow in example
+			// also it's so bright, maybe that's a problem 
+				// but it's also always been that way...
+			// use projection and view in draw -------------------------
+				// see what the cam sees
+			// the shader doesn't have model and view
+				// because it's orthographic? ----------------------------------------------------
+			// TWO PROBLEMS I THINK --------------------------
+				// WE HAVE TO DRAW THE SHADOWS USING THE PHONG SHADOW SHADER
+					// solved by incorporating that into all our phong stuff
+				// WE ARE FAILING TO CREATE A BITMAP
+					// we aren't writing to the z-buffer, we need to do so first by using the shadow shader for everything
+
+		float near_plane = 0.0f, far_plane = 20000.f; // taken from projection matrix in draw()
+		glm::mat4 lightProjection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
+		glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f));
+		// lightView = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
 		glm::mat4 projectedLightSpaceMatrix = lightProjection * lightView; // create projected light space matrix by multiplying the light projection and light view matrices
 
-		generateDepthMap(shaderPrograms["shadowProgram"], shadow, projectedLightSpaceMatrix);
+		//// lab stuff
+		//float near_plane = 1.0f, far_plane = 70.5f;
+		//glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		//glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f)); // lookAt() constructs a view matrix from light position, light direction and up vectors
+		//glm::mat4 projectedLightSpaceMatrix = lightProjection * lightView; // create projected light space matrix by multiplying the light projection and light view matrices
 
-		// saveShadowMapToBitmap(shadow.Texture, SH_MAP_WIDTH, SH_MAP_HEIGHT);
+		generateDepthMap(shaderPrograms["shadow"], shadow, projectedLightSpaceMatrix);
+
+		saveShadowMapToBitmap(shadow.Texture, SH_MAP_WIDTH, SH_MAP_HEIGHT);
 
 		renderWithShadow(shaderPrograms["phong-shadow"], shadow, projectedLightSpaceMatrix);
 
@@ -1290,8 +1367,17 @@ int main(int argc, char** argv)
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
+		
 		// processKeyboardRotate(window);
 		processKeyboardWalkAround(window);
+		if (weatherCondition()) { // for above cameras rip
+			
+		}
+		else {
+			
+		}
+
+
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
 		{
 			weatherFlag = false;

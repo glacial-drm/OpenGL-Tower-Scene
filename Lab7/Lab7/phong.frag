@@ -111,8 +111,8 @@ float CalculateSpotIllumination()
 void main()
 {
 	// float phong = CalculateDirectionalIllumination();
-	// float phong = CalculatePositionalIllumination();
-	float phong = CalculateSpotIllumination();
+	float phong = CalculatePositionalIllumination();
+	// float phong = CalculateSpotIllumination();
 
 	fColour = vec4(phong * col * lightColour, 1.f);
 }
