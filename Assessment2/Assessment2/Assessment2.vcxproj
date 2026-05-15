@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -139,20 +139,14 @@
   <ItemGroup>
     <None Include="alpha.frag" />
     <None Include="alpha.vert" />
-    <None Include="instancing.frag" />
-    <None Include="instancing.vert" />
     <None Include="particle.frag" />
     <None Include="particle.vert" />
     <None Include="phong.vert" />
-    <None Include="phongAlpha.frag" />
-    <None Include="phongAlpha.vert" />
     <None Include="phongDirectional.frag" />
     <None Include="phongPositional.frag" />
     <None Include="phongShadow.frag" />
     <None Include="phongShadow.vert" />
     <None Include="phongSpot.frag" />
-    <None Include="phongTextureDirectional.frag" />
-    <None Include="phongTextureDirectional.vert" />
     <None Include="phongTextureSpot.frag" />
     <None Include="phongTextureSpot.vert" />
     <None Include="reflection.frag" />
@@ -168,13 +162,10 @@
     <None Include="triangle.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\camera.h" />
     <ClInclude Include="..\include\chunk.h" />
-    <ClInclude Include="..\include\do_not_edit.h" />
     <ClInclude Include="..\include\obj-load.h" />
     <ClInclude Include="..\include\particle_generator.h" />
     <ClInclude Include="..\include\perlin.h" />
-    <ClInclude Include="..\include\tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -738,12 +738,6 @@ void draw(glm::mat4 view) {
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-spot"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
 	glUniform3f(glGetUniformLocation(shaderPrograms["phong-texture-spot"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
-	glUseProgram(shaderPrograms["phong-spot"]);
-	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightDirection"), lightDirection.x, lightDirection.y, lightDirection.z);
-	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightColour"), 1.f, 1.f, 1.f);
-	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "camPos"), Camera.Position.x, Camera.Position.y, Camera.Position.z);
-	glUniform3f(glGetUniformLocation(shaderPrograms["phong-spot"], "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-
 	glUseProgram(shaderPrograms["phong-directional"]);
 	//glBindTexture(GL_TEXTURE_2D, shadow.Texture);
 	//glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["phong-directional"], "projectedLightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(projectedLightSpaceMatrix));
@@ -1157,20 +1151,18 @@ int main(int argc, char** argv)
 		// single repeating using different y values
 	floatTotals["alpha"] = dim * dim * 6 * 7; // single chunk procedural
 	glm::vec3 towerOrigin = glm::vec3(0.f, 0.f, 0.f);// glm::vec3(-6300.f, 80.f + 2000.f , -3500.f);
-	chunk* alphaChunk = createChunk(towerOrigin, 2, true, 98); // change origin back once done ---------------------------------
-	// float* alphaVerts = new float[vertexTotal * 10]; // * 10 for alpha // now 7 for alpha
-	// alphaVerts = chunkVertices(alphaChunk);
+	chunk* alphaChunk = createChunk(towerOrigin, 2, true, 98); 
 	float* alphaVerts = chunkVertices(alphaChunk, 7);
 
 
-	// load models -----------------------------------
+	// load models 
 	float* towerVerts = load_model("resources/objs/tower.obj", floatTotals["tower"], false, false, false, true, false, false);
 	float* tornadoVerts = load_model("resources/objs/tornado.obj", floatTotals["tornado"], false, false, false, false, false, true);
 	float* bellVerts = load_model("resources/objs/bell.obj", floatTotals["bell"], false, false, true, false, false, false);
 	float* cloudRingVerts = load_model("resources/objs/cloudRing.obj", floatTotals["cloudRing"], false, false, false, false, false, true);
 
 
-	// BEZIER CURVE ----------------------------------
+	// BEZIER CURVE 
 	
 	std::vector<float> angles;
 	float rotations = 1.5;
@@ -1182,11 +1174,9 @@ int main(int argc, char** argv)
 	float radius = 10;
 	float heightOffset = 3.f;
 	std::vector<point> ctrl_points;
-//	ctrl_points.push_back(point(0.f, 0.f, 0.f));
 	for (int i = 0; i <= angleTotal; i++) {
 		ctrl_points.push_back(point(sine(angles[i]) * radius, (float)(i+1) * heightOffset, csine(angles[i]) * radius));
 	}
-	// ctrl_points.push_back(point(0.f, 120.f, 0.f));
 
 	int num_evals = 30;
 	curve = EvaluateBezierCurve(ctrl_points, num_evals);
@@ -1219,13 +1209,10 @@ int main(int argc, char** argv)
 	shaderPrograms["refraction"] = CompileShader("reflection.vert", "refraction.frag");
 	shaderPrograms["particle"] = CompileShader("particle.vert", "particle.frag");
 	shaderPrograms["phong-texture-spot"] = CompileShader("phongTextureSpot.vert", "phongTextureSpot.frag");
-	shaderPrograms["phong-texture-directional"] = CompileShader("phongTextureDirectional.vert", "phongTextureDirectional.frag");
 
 	shaderPrograms["phong-shadow"] = CompileShader("phongShadow.vert", "phongShadow.frag");
 	shaderPrograms["phong-directional"] = CompileShader("phongShadow.vert", "phongDirectional.frag");
-	shaderPrograms["phong-spot"] = CompileShader("phong.vert", "phongSpot.frag");
 	shaderPrograms["phong-positional"] = CompileShader("phong.vert", "phongPositional.frag");
-	shaderPrograms["instance"] = CompileShader("instancing.vert", "instancing.frag");
 	shaderPrograms["shadow"] = CompileShader("shadow.vert", "shadow.frag");
 
 	shaderPrograms["triangle"] = CompileShader("triangle.vert", "triangle.frag");
@@ -1348,6 +1335,8 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+	
+	
 	// configure MSAA framebuffer
 	unsigned int framebuffer;
 	glGenFramebuffers(1, &framebuffer);

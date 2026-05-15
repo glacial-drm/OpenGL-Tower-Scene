@@ -65,12 +65,6 @@
     <None Include="alpha.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongAlpha.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="phongAlpha.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="particle.frag">
       <Filter>Source Files</Filter>
     </None>
@@ -101,30 +95,9 @@
     <None Include="phongTextureSpot.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongTextureDirectional.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="phongTextureDirectional.vert">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="instancing.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="instancing.vert">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\chunk.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\tiny_obj_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\do_not_edit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\obj-load.h">

@@ -70,14 +70,7 @@ chunk* createChunk(glm::vec3 origin, int height, bool isPerlin, int stride) {
 				else if (val < -1.0f)
 					val = -1.0f;
 
-				// int newVal = (int)(((val + 1.0f) * 0.5f) * 255);
-
 				newChunk->heights[row][col] = val * 500.f;
-
-				//float randFloat = static_cast <float>(rand()) / static_cast <float>(RAND_MAX); // random between 0 and 1
-				//randFloat *= height;
-				//
-				//newChunk->heights[row][col] = randFloat;
 			}
 			else {
 				newChunk->heights[row][col] = height; // randFloat; //glm::perlin(glm::vec2((float)row, (float)col));; // or use our implementation of perlin and talk about in R&D --------------------------------------
@@ -88,10 +81,6 @@ chunk* createChunk(glm::vec3 origin, int height, bool isPerlin, int stride) {
 
 	return newChunk;
 }
-
-//chunk customChunk() { // why use a function to define this anyway, just hardcode the chunk
-//	return;
-//}
 
 float textureChunk(float height) {
 
@@ -125,7 +114,6 @@ float* colourChunk(float height) {
 }
 
 void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk, float texX, float texY) {
-	// THIS WOULD HAVE TO PASS THE VERTEX POSITION TO THE TEXTURE CHUNK FUNCTION --------------------------------
 	
 	// pos
 	float height = chunk->origin.y + chunk->heights[row][col];
@@ -142,10 +130,6 @@ void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk, floa
 	verts[offset + 5] = colour[2];
 		
 	if (floatPerVert == 8) { // texture
-		// texture has to repeat each square
-		// then simply render the triangles from (0,0 to 1,1)
-			// texture atlas would be aligning all 3 tex images, then applying a 0.3 or 0.6 modifier to x ----------------------------
-				// lol no
 		verts[offset + 3] = texX;
 		verts[offset + 4] = texY;
 
