@@ -3,8 +3,10 @@
 
 #include <glm/gtc/noise.hpp>
 
+#include "perlin.h"
+
 int dim = 8;
-int stride = 100;
+int stride = 250;
 int floatPerVert;
 
 typedef struct {
@@ -19,7 +21,7 @@ typedef struct {
 } chunk;
 
 
-chunk* createChunk(glm::vec3 origin, int height, bool isPerlin) {
+chunk* createChunk(glm::vec3 origin, int height, bool isPerlin, int stride) {
 
 	chunk* newChunk = new chunk;
 
@@ -27,7 +29,11 @@ chunk* createChunk(glm::vec3 origin, int height, bool isPerlin) {
 	newChunk->stride = stride;
 
 	newChunk->origin = origin;
+	
 	newChunk->heights = new float*[newChunk->dim];
+
+	const int GRID_SIZE = 30;
+	int octaves = 20;
 
 	for (int row = 0; row < newChunk->dim; row++) {
 		
@@ -35,13 +41,46 @@ chunk* createChunk(glm::vec3 origin, int height, bool isPerlin) {
 
 		for (int col = 0; col < newChunk->dim; col++) {
 			
-			newChunk->heights[row][col] = height; // randFloat; //glm::perlin(glm::vec2((float)row, (float)col));; // or use our implementation of perlin and talk about in R&D --------------------------------------
-
 			if (isPerlin) {
-				float randFloat = static_cast <float>(rand()) / static_cast <float>(RAND_MAX); // random between 0 and 1
-				randFloat *= height;
-				
-				newChunk->heights[row][col] = randFloat;
+				int index = (row * dim + col) * 4;
+
+
+				float val = 0;
+
+				float freq = 1;
+				float amp = 1;
+
+				for (int i = 0; i < octaves; i++) // sample i points per pixel (for us it'll be just within the grid)
+				{
+					val += perlin((float)col * freq / (float)GRID_SIZE, (float)row * freq / (float)GRID_SIZE) * (float)amp;
+
+					// val += glm::perlin(glm::vec2(col * freq / GRID_SIZE, row * freq / GRID_SIZE) * amp);
+
+					freq *= 2;
+					amp /= 2;
+
+				}
+
+				// Contrast
+				val *= 1.2;
+
+				// Clipping 
+				if (val > 1.0f)
+					val = 1.0f;
+				else if (val < -1.0f)
+					val = -1.0f;
+
+				// int newVal = (int)(((val + 1.0f) * 0.5f) * 255);
+
+				newChunk->heights[row][col] = val * 500.f;
+
+				//float randFloat = static_cast <float>(rand()) / static_cast <float>(RAND_MAX); // random between 0 and 1
+				//randFloat *= height;
+				//
+				//newChunk->heights[row][col] = randFloat;
+			}
+			else {
+				newChunk->heights[row][col] = height; // randFloat; //glm::perlin(glm::vec2((float)row, (float)col));; // or use our implementation of perlin and talk about in R&D --------------------------------------
 			}
 
 		}
@@ -69,17 +108,17 @@ float textureChunk(float height) {
 }
 
 float* colourChunk(float height) {
-	float col[3] = {0.f, 1.f, 0.f};
+	float col[3] = {0.035f, 0.471f, 0.2120f};
 
 	if (height < 2) {
-		col[0] = 0.f;
-		col[1] = 0.f;
-		col[2] = 1.f;
+		col[0] = 0.016f;
+		col[1] = 0.322f;
+		col[2] = 0.431f;
 	}
 	else if (height > 5) {
-		col[0] = 1.f;
-		col[1] = 0.f;
-		col[2] = 0.f;
+		col[0] = 0.361f;
+		col[1] = 0.2f;
+		col[2] = 0.125f;
 	}
 	
 	return col;
@@ -107,17 +146,21 @@ void writeVertex(float* verts, int row, int col, int& offset, chunk* chunk, floa
 		// then simply render the triangles from (0,0 to 1,1)
 			// texture atlas would be aligning all 3 tex images, then applying a 0.3 or 0.6 modifier to x ----------------------------
 				// lol no
-		verts[offset + 6] = texX;
-		verts[offset + 7] = texY;
+		verts[offset + 3] = texX;
+		verts[offset + 4] = texY;
+
+		verts[offset + 5] = static_cast <float>(rand()) / static_cast <float>(RAND_MAX);
+		verts[offset + 6] = static_cast <float>(rand()) / static_cast <float>(RAND_MAX);
+		verts[offset + 7] = static_cast <float>(rand()) / static_cast <float>(RAND_MAX);
 	}
 	else if (floatPerVert == 7) { // alpha
 		verts[offset + 6] = 0.5f;
 	}
 	else { // 9 | normals
 		//
-		verts[offset + 3] = texX;
-		verts[offset + 4] = texY;
-		verts[offset + 5] = textureChunk(height); // texture position in array
+		//verts[offset + 3] = texX;
+		//verts[offset + 4] = texY;
+		//verts[offset + 5] = textureChunk(height); // texture position in array
 
 		// ----------- original (normals)
 		verts[offset + 6] = 0.f;

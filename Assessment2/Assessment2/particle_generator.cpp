@@ -14,7 +14,7 @@ ParticleGenerator::ParticleGenerator(GLuint program, unsigned int texture, unsig
     this->init();
 }
 
-void ParticleGenerator::Update(float dt, glm::vec2 position, unsigned int newParticles, glm::vec2 offset, glm::vec2 velocity)
+void ParticleGenerator::Update(float dt, glm::vec3 position, unsigned int newParticles, glm::vec3 offset, glm::vec3 velocity)
 {
     // add new particles 
     for (unsigned int i = 0; i < newParticles; ++i)
@@ -51,7 +51,7 @@ void ParticleGenerator::Draw(glm::mat4 view, glm::mat4 projection, glm::mat4 mod
             glUniformMatrix4fv(glGetUniformLocation(this->program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
             glUniformMatrix4fv(glGetUniformLocation(this->program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-            glUniform2f(glGetUniformLocation(this->program, "offset"), particle.Position.x, particle.Position.y); // this->shader.SetVector2f("offset", particle.Position);
+            glUniform3f(glGetUniformLocation(this->program, "offset"), particle.Position.x, particle.Position.y, particle.Position.z); // this->shader.SetVector2f("offset", particle.Position);
             
             
             glUniform4f(glGetUniformLocation(this->program, "color"), particle.Color.x, particle.Color.y, particle.Color.z, particle.Color.w); // this->shader.SetVector4f("color", particle.Color);
@@ -72,13 +72,13 @@ void ParticleGenerator::init()
     // set up mesh and attribute properties
     unsigned int VBO;
     float particle_quad[] = {
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.f,     0.0f, 1.0f,
+        1.0f, 0.0f, 0.f,     1.0f, 0.0f,
+        0.0f, 0.0f, 0.f,     0.0f, 0.0f,
 
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
+        0.0f, 1.0f, 0.f,     0.0f, 1.0f,
+        1.0f, 1.0f, 0.f,     1.0f, 1.0f,
+        1.0f, 0.0f, 0.f,     1.0f, 0.0f
     };
     glGenVertexArrays(1, &this->VAO);
     glGenBuffers(1, &VBO);
@@ -88,7 +88,9 @@ void ParticleGenerator::init()
     glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
     // set mesh attributes
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
     // create this->amount default particle instances
@@ -119,7 +121,7 @@ unsigned int ParticleGenerator::firstUnusedParticle()
     return 0;
 }
 
-void ParticleGenerator::respawnParticle(Particle& particle, glm::vec2 position, glm::vec2 velocity, glm::vec2 offset) // re defined -----------------------------
+void ParticleGenerator::respawnParticle(Particle& particle, glm::vec3 position, glm::vec3 velocity, glm::vec3 offset) // re defined -----------------------------
 {
     float random = ((rand() % 100) - 50) / 10.0f;
     float rColor = 0.5f + ((rand() % 100) / 100.0f);

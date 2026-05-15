@@ -139,6 +139,8 @@
   <ItemGroup>
     <None Include="alpha.frag" />
     <None Include="alpha.vert" />
+    <None Include="instancing.frag" />
+    <None Include="instancing.vert" />
     <None Include="particle.frag" />
     <None Include="particle.vert" />
     <None Include="phong.vert" />
@@ -149,10 +151,10 @@
     <None Include="phongShadow.frag" />
     <None Include="phongShadow.vert" />
     <None Include="phongSpot.frag" />
-    <None Include="phongTexture.frag" />
-    <None Include="phongTexture.vert" />
-    <None Include="phongTextureArr.frag" />
-    <None Include="phongTextureArr.vert" />
+    <None Include="phongTextureDirectional.frag" />
+    <None Include="phongTextureDirectional.vert" />
+    <None Include="phongTextureSpot.frag" />
+    <None Include="phongTextureSpot.vert" />
     <None Include="reflection.frag" />
     <None Include="reflection.vert" />
     <None Include="refraction.frag" />
@@ -171,6 +173,7 @@
     <ClInclude Include="..\include\do_not_edit.h" />
     <ClInclude Include="..\include\obj-load.h" />
     <ClInclude Include="..\include\particle_generator.h" />
+    <ClInclude Include="..\include\perlin.h" />
     <ClInclude Include="..\include\tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

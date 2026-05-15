@@ -65,12 +65,6 @@
     <None Include="alpha.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongTexture.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="phongTexture.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="phongAlpha.frag">
       <Filter>Source Files</Filter>
     </None>
@@ -101,10 +95,22 @@
     <None Include="phong.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongTextureArr.vert">
+    <None Include="phongTextureSpot.frag">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="phongTextureArr.frag">
+    <None Include="phongTextureSpot.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongTextureDirectional.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="phongTextureDirectional.vert">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="instancing.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="instancing.vert">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
@@ -125,6 +131,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\particle_generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\perlin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

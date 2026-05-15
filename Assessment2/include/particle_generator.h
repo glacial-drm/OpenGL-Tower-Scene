@@ -26,7 +26,7 @@
 
 // Represents a single particle and its state
 struct Particle {
-    glm::vec2 Position, Velocity;
+    glm::vec3 Position, Velocity;
     glm::vec4 Color;
     float     Life;
 
@@ -43,7 +43,7 @@ public:
     // constructor
     ParticleGenerator(GLuint program, unsigned int texture, unsigned int amount);
     // update all particles
-    void Update(float dt, glm::vec2 position, unsigned int newParticles, glm::vec2 offset = glm::vec2(0.0f, 0.0f), glm::vec2 velocity = glm::vec2(1.0f, 1.0f));
+    void Update(float dt, glm::vec3 position, unsigned int newParticles, glm::vec3 offset = glm::vec3(0.0f), glm::vec3 velocity = glm::vec3(1.0f, 1.0f, 1.0f));
     // render all particles
     void Draw(glm::mat4 view, glm::mat4 projection, glm::mat4 model);
 private:
@@ -59,7 +59,7 @@ private:
     // returns the first Particle index that's currently unused e.g. Life <= 0.0f or 0 if no particle is currently inactive
     unsigned int firstUnusedParticle();
     // respawns particle
-    void respawnParticle(Particle& particle, glm::vec2 position, glm::vec2 velocity, glm::vec2 offset);
+    void respawnParticle(Particle& particle, glm::vec3 position, glm::vec3 velocity, glm::vec3 offset);
 };
 
 #endif
