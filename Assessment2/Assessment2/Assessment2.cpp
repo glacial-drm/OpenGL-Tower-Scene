@@ -53,7 +53,6 @@ float fov = 55.f;
 
 bool weatherFlag = 0;
 
-unsigned int cloudInstances = 20;
 
 std::vector<glm::vec3> alphaChunkPositions; // corresponds to the model translation per transparent obj
 
@@ -130,7 +129,6 @@ float csine(float f) {
 }
 
 // Camera 
-// CONTAINS SPOTLIGHT CODE -----------------------------
 void processKeyboardRotate(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -659,11 +657,6 @@ void drawWithShadow() {
 	glBindVertexArray(0);
 
 
-	// particles --------- THESE NOW USE THE CURVE HF (make like cool stuff surround tower
-	//model = glm::mat4(1.f);
-	//// model = glm::translate(model, );
-	//model = glm::rotate(model, glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
-	//model = glm::scale(model, glm::vec3(10.f, 10.f, 10.f));
 	Particles->Draw(view, projection, model);
 	Particles->Update(0.1f, glm::vec3(-90.f, 70.f, -45.f), 2, glm::vec3(2.0f)); // ParticleGenerator::Update(float dt, glm::vec2 position, unsigned int newParticles, glm::vec2 offset, glm::vec2 velocity)
 
@@ -726,8 +719,6 @@ void drawWithShadow() {
 
 void draw(glm::mat4 view) {
 	// Constant view and projection
-	/*glm::mat4 view = glm::mat4(1.f);
-	view = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);*/
 	glm::mat4 projection = glm::mat4(1.f);
 	projection = glm::perspective(glm::radians(fov), (float)WIDTH / (float)HEIGHT, .1f, 20000.f);
 	
@@ -958,7 +949,7 @@ void draw(glm::mat4 view) {
 	glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 	glBindVertexArray(VAOs["bell"]);
-	glActiveTexture(GL_TEXTURE0); // reflection, refraction ------------------------------------- (and switch program to appropriate program)
+	glActiveTexture(GL_TEXTURE0); // reflection, refraction
 	if (weatherCondition()) {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textures["skybox-dark"]);
 	}
@@ -972,20 +963,6 @@ void draw(glm::mat4 view) {
 	model = glm::mat4(1.f);
 	model = glm::scale(model, glm::vec3(80.f, 80.f, 80.f));
 	Particles->Draw(view, projection, model);
-
-	// Instances
-	glUseProgram(shaderPrograms["instance"]); // removed textures
-	glUniform1i(glGetUniformLocation(shaderPrograms["instance"], "texture_diffuse1"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["instance"], "view"), 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(glGetUniformLocation(shaderPrograms["instance"], "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textures["cloud"]);
-	
-
-	glBindVertexArray(VAOs["cloud"]);
-	glDrawElementsInstanced(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0, cloudInstances); // indices -> instance matrix stuff?
-	glBindVertexArray(0);
 
 
 	// Transparent verts
@@ -1191,7 +1168,6 @@ int main(int argc, char** argv)
 	float* tornadoVerts = load_model("resources/objs/tornado.obj", floatTotals["tornado"], false, false, false, false, false, true);
 	float* bellVerts = load_model("resources/objs/bell.obj", floatTotals["bell"], false, false, true, false, false, false);
 	float* cloudRingVerts = load_model("resources/objs/cloudRing.obj", floatTotals["cloudRing"], false, false, false, false, false, true);
-	float* cloudVerts = load_model("resources/objs/eagle.obj", floatTotals["cloud"], false, false, false, false, false, false);
 
 
 	// BEZIER CURVE ----------------------------------
@@ -1233,10 +1209,6 @@ int main(int argc, char** argv)
 
 	gl3wInit();
 
-	//// Get the max number of samples for multisampling
-	//int max_samples;
-	//glGetIntegerv(GL_MAX_SAMPLES, &max_samples); // store queried enum in max_samples, guaranteed to be at least 4
-	//printf("max samples supported = %d\n", max_samples);
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(DebugCallback, 0);
@@ -1256,11 +1228,6 @@ int main(int argc, char** argv)
 	shaderPrograms["instance"] = CompileShader("instancing.vert", "instancing.frag");
 	shaderPrograms["shadow"] = CompileShader("shadow.vert", "shadow.frag");
 
-	// Broken
-	// shaderPrograms["phongAlphaProgram"] = CompileShader("phongAlpha.vert", "phongAlpha.frag");
-	// shaderPrograms["phong-texture-arr"] = CompileShader("phongTextureArr.vert", "phongTextureArr.frag");
-
-	// Basic
 	shaderPrograms["triangle"] = CompileShader("triangle.vert", "triangle.frag");
 	shaderPrograms["texture"] = CompileShader("texture.vert", "texture.frag");
 
@@ -1381,68 +1348,7 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-	// Instancing clouds
-	glm::mat4* modelMatrices;
-	modelMatrices = new glm::mat4[cloudInstances];
-	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-	float rad = 150.0; // 'radius'
-	float offset = 25.0f;
-	for (unsigned int i = 0; i < cloudInstances; i++)
-	{
-		glm::mat4 model = glm::mat4(1.0f);
-		// 1. translation: displace along circle with 'radius' in range [-offset, offset]
-		float angle = (float)i / (float)cloudInstances * 360.0f;
-		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float x = sin(angle) * rad + displacement;
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float y = displacement * 0.4f; // keep height of asteroid field smaller compared to width of x and z
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float z = cos(angle) * rad + displacement;
-		model = glm::translate(model, glm::vec3(x, y, z));
-
-		// 2. scale: Scale between 0.05 and 0.25f
-		//float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
-		model = glm::scale(model, glm::vec3(1000.f));
-
-		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
-		float rotAngle = static_cast<float>((rand() % 360));
-		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
-		// 4. now add to list of matrices
-		modelMatrices[i] = model;
-	}
-
-
-	glGenBuffers(1, &VBOs["cloud"]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs["cloud"]);
-	glBufferData(GL_ARRAY_BUFFER, cloudInstances * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
-
-	glBindVertexArray(VAOs["cloud"]);
-	// vertex attributes
-	std::size_t vec4Size = sizeof(glm::vec4);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
-
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-
-	glBindVertexArray(0);
-
-
-
-	
-
-
 	// configure MSAA framebuffer
-	// --------------------------
 	unsigned int framebuffer;
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -1510,12 +1416,8 @@ int main(int argc, char** argv)
 	// Objs
 	textures["tower"] = loadTexture("resources/textures/tower.jpeg");
 	textures["tower-dark"] = loadTexture("resources/textures/towerDark.jpg");
-	textures["tornado"] = loadTexture("resources/textures/tornado.png");
-	textures["cloud"] = loadTexture("resources/textures/cloudTex.jpg");
 
-	// Chunks
-	textures["rock"] = loadTexture("resources/textures/rock.jpg");
-	textures["grass"] = loadTexture("resources/textures/grass.jpg"); 
+	// Chunks 
 	textures["water"] = loadTexture("resources/textures/water.jpg");
 	textures["waterDark"] = loadTexture("resources/textures/waterDark.jpg");
 
@@ -1544,10 +1446,9 @@ int main(int argc, char** argv)
 		float near_plane = 0.0f, far_plane = 20000.f; // taken from projection matrix in draw()
 		glm::mat4 lightProjection = glm::ortho(-10.f, -6000.0f, -10.f, 8000.f, near_plane, far_plane);
 		glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDirection, glm::vec3(0.0f, 1.f, 0.0f));
-		// lightView = glm::lookAt(Camera.Position, Camera.Position + Camera.Front, Camera.Up);
 		glm::mat4 projectedLightSpaceMatrix = lightProjection * lightView; // create projected light space matrix by multiplying the light projection and light view matrices
 
-		// generateDepthMap(shaderPrograms["shadow"], shadow, projectedLightSpaceMatrix);
+		generateDepthMap(shaderPrograms["shadow"], shadow, projectedLightSpaceMatrix);
 		//saveShadowMapToBitmap(shadow.Texture, SH_MAP_WIDTH, SH_MAP_HEIGHT);
 		// renderWithShadow(shaderPrograms["phong-shadow"], shadow, projectedLightSpaceMatrix);
 		
