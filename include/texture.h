@@ -3,6 +3,7 @@
 #include <iostream>
 #include "stb_image.h"
 
+
 GLuint setup_texture(const char* filename)
 {
 	// Enable Textures

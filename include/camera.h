@@ -43,7 +43,7 @@ void InitCamera(SCamera& in)
 	in.Pitch = 0.f;
 }
 
-float cam_dist = 2.f;
+float cam_dist = 1000.f;
 
 void MoveAndOrientCamera(SCamera& in, glm::vec3 target,
 	float distance, float xoffset, float yoffset) // Camera moves on an "imaginary sphere surrounding the model" - camera is reposition and reoriented at the same time
